@@ -65,7 +65,7 @@ layout=[
 #updatable=[i for i in layout[1]]+[layout[2][1], layout[2][3]]+[layout[3][1], layout[3][3]]
 updatable=["hour_display", "day_display", "tenday_display", "month_display", "year_display"]+["temp_display", "precip_display"]+["WS_display", "WD_display"]
 update_values=["{}:00".format(ct.db["hour"]), ct.db["day"], ct.db["tenday"], "{}. {}".format(ct.db["month"][0],ct.db["month"][1]), ct.db["year"]]+[ct.db["temperature"], ct.db["precipitation"]]+[ct.db["windspeed"], ct.db["wind_dir"]]
-window=sg.Window("D&D Time Tracker",layout, finalize=True)
+window=sg.Window("D&D Time Manager",layout, finalize=True)
 #print(len(updatable), len(update_values))
 while True:
     event, values = window.read()
