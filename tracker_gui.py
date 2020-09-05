@@ -1,55 +1,6 @@
 import PySimpleGUI as sg
 import console_test as ct
 
-"""
-sg.theme('DarkAmber')	# Add a touch of color
-# All the stuff inside your window.
-layout = [  [sg.Text('Some text on Row 1')],
-            [sg.Text('Enter something on Row 2'), sg.InputText("inout",readonly=True)],
-            [sg.Button('Ok'), sg.Button('Cancel'), sg.Button("Save")] ]
-
-# Create the Window
-window = sg.Window('Window Title', layout)
-# Event Loop to process "events" and get the "values" of the inputs
-while True:
-    event, values = window.read()
-    if event == sg.WIN_CLOSED or event == 'Cancel':	# if user closes window or clicks cancel
-        break
-    if event=="Save":
-        print("saved")
-    if event=="Ok":
-        print('You entered ', values[0])
-        layout[1][1].update(value="ewatwe")
-    
-    
-    print(event)
-window.close()
-"""
-"""
-x=0
-layout=[
-        [sg.Text("Time"), sg.InputText(str(x), readonly=True,key="number")],
-        [sg.Button("+1",key="+1"), sg.Button("-1",key="-1")]
-        ]
-
-window=sg.Window("Test",layout)
-while True:
-    event, values = window.read()
-    if event == sg.WIN_CLOSED:
-        print("asdf")
-        break
-    elif event=="+1":
-        x+=1
-        window["number"].Update(str(x))
-        #layout[0][1].Update(str(x))
-    elif event=="-1":
-        x-=1
-        layout[0][1].Update(str(x))
-    
-window.close()
-
-"""
-
 layout=[
         [sg.Text("Time")],
        
@@ -62,10 +13,10 @@ layout=[
         [sg.InputText("0", size=(5,1), key="hour_input"), sg.InputText("0", size=(5,1), key="day_input"), sg.Button("Submit")]
         ]
 
-#updatable=[i for i in layout[1]]+[layout[2][1], layout[2][3]]+[layout[3][1], layout[3][3]]
 updatable=["hour_display", "day_display", "tenday_display", "month_display", "year_display"]+["temp_display", "precip_display"]+["WS_display", "WD_display"]
 update_values=["{}:00".format(ct.db["hour"]), ct.db["day"], ct.db["tenday"], "{}. {}".format(ct.db["month"][0],ct.db["month"][1]), ct.db["year"]]+[ct.db["temperature"], ct.db["precipitation"]]+[ct.db["windspeed"], ct.db["wind_dir"]]
-window=sg.Window("D&D Time Manager",layout, finalize=True)
+
+window=sg.Window("D&D Time Manager", layout, finalize=True)
 #print(len(updatable), len(update_values))
 while True:
     event, values = window.read()
