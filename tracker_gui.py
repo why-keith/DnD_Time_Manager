@@ -22,23 +22,18 @@ window=sg.Window("D&D Time Manager", layout, finalize=True, icon="dnd_logo.ico")
 
 
 #sg.theme("DarkRed1")
-#print(len(updatable), len(update_values))
+
 while True:
     event, values = window.read()
     if event == sg.WIN_CLOSED:
         break
     elif event=="Log":
-        print(0)
         try:
             log=open("log.txt", "a")
-           # log.write("{}| {}".format(window["log_input"].Get(), ct.db["hour"]))
             log.write("{} {}/{}/{} - {}\n".format(str(ct.db["hour"])+":00", ct.db["day"], ct.db["month"][0], ct.db["year"], window["log_input"].Get()))
             log.close()
         except:
             print("UNABLE TO LOG")
-        
-            
-
     
     elif event == "Submit":
         try:
@@ -60,6 +55,5 @@ while True:
             window["day_input"].Update("0")    
     else:
         print (event)
-
 
 window.close()
