@@ -67,8 +67,12 @@ def hour(x):
         db["hour"]+=int(x)
         while db["hour"]>=24:
             db["hour"]-=24
-            db["day"]+=1
+            db["day_raw"]+=1
             next_day()
+        while db["hour"]<0:
+            db["hour"]+=24
+            db["day_raw"]-=1
+            next_day(-1)
         print("Time: {}:00".format(db["hour"]))
     except TypeError as e:
         print("INVALID TIME INCREMENT")
