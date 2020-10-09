@@ -38,7 +38,8 @@ while True:
             log=open("log.txt", "a")
             log.write("{} {}/{}/{} - {}\n".format(str(ct.db["hour"])+":00", ct.db["day"], ct.db["month"][0], ct.db["year"], window["log_input"].Get()))
             
-            log.close()            
+            log.close()    
+            window["log_input"].Update("")
             
         except:
             print("UNABLE TO LOG")
