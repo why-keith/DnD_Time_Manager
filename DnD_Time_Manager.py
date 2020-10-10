@@ -72,7 +72,7 @@ while True:
             d=int(window["day_input"].Get())
         except:
             print("INVALID ENTRY")
-            error("Invalid log input detected")
+            error("Invalid time input detected")
             pass
         else:
             ct.hour(h)
