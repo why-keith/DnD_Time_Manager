@@ -2,6 +2,7 @@ import PySimpleGUI as sg
 import console_test as ct
 from os import startfile
 from time import sleep
+from error import error
 
 
 layout=[
@@ -43,6 +44,7 @@ while True:
             
         except:
             print("UNABLE TO LOG")
+            error("Unable to print to log.txt")
             
         #else:
             
@@ -55,10 +57,14 @@ while True:
         try:
             startfile("log.txt")
         except:
-            print("UNABLE TO OPEN LOG FILE")
-            log=open("log.txt", "a")
-            log.close()
-            startfile("log.txt")
+            
+            try:
+                log=open("log.txt", "a")
+                log.close()
+                startfile("log.txt")
+            except:
+                print("UNABLE TO OPEN LOG FILE")
+                error("Unable to open log.txt")
     
     elif event == "Submit":
         try:
@@ -66,6 +72,7 @@ while True:
             d=int(window["day_input"].Get())
         except:
             print("INVALID ENTRY")
+            error("Invalid log input detected")
             pass
         else:
             ct.hour(h)
