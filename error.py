@@ -8,4 +8,3 @@ def error(message):
     error_log.close()
     return
     
-error("test")
