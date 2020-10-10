@@ -72,7 +72,7 @@ while True:
             d=int(window["day_input"].Get())
         except:
             print("INVALID ENTRY")
-            error("Invalid time input detected")
+            error("Invalid time input \"{}, {}\" detected".format(window["hour_input"].Get(),window["day_input"].Get()))
             pass
         else:
             ct.hour(h)
@@ -83,8 +83,8 @@ while True:
             print("\n")
             for i in range(len(updatable)):
                 window[updatable[i]].Update(update_values[i])
-            window["hour_input"].Update("0")
-            window["day_input"].Update("0")    
+        window["hour_input"].Update("0")
+        window["day_input"].Update("0")    
     else:
         print (event)
 
