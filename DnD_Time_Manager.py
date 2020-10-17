@@ -2,7 +2,14 @@ import PySimpleGUI as sg
 import console_test as ct
 from os import startfile
 from time import sleep
+from error import error
 
+QT_ENTER_KEY1 =  'special 16777220'
+QT_ENTER_KEY2 =  'special 16777221'
+
+focused_enter=None
+
+#sg.theme("DarkRed1")
 
 layout=[
         [sg.Text("Time")],
@@ -19,21 +26,30 @@ layout=[
         ]
 
 updatable=["hour_display", "day_display", "tenday_display", "month_display", "year_display"]+["temp_display", "precip_display"]+["WS_display", "WD_display"]
-#update_values=["{}:00".format(ct.db["hour"]), ct.db["day"], ct.db["tenday"], "{}. {}".format(ct.db["month"][0],ct.db["month"][1]), ct.db["year"]]+[ct.db["temperature"], ct.db["precipitation"]]+[ct.db["windspeed"], ct.db["wind_dir"]]
 
-window=sg.Window("D&D Time Manager", layout, finalize=True, icon="dnd_logo.ico")
+window=sg.Window("D&D Time Manager", layout, finalize=True, icon="dnd_logo.ico", return_keyboard_events=True)
 
 
-#sg.theme("DarkRed1")
+
 
 while True:
     event, values = window.read()
-    if event == sg.WIN_CLOSED:
+    
+    if event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
+        active_element=window.FindElementWithFocus()          #Dectects if the enter key has been pressed and checks which element is active
+        if active_element==window["log_input"]:
+            focused_enter="log"
+        elif active_element==window["hour_input"] or active_element==window["day_input"]:
+            focused_enter="time"
+  
+    
+    if event == sg.WIN_CLOSED:    #breaks loop if window is closed
         break
-    elif event=="Log":
+    
+    elif event=="Log" or focused_enter=="log":    #submits log 
+        focused_enter=None
         
-   #     window["log_input"].Update(disabled=True)
-      #  window["log_input"].Update(background_color="green")
+
         try:
             log=open("log.txt", "a")
             log.write("{} {}/{}/{} - {}\n".format(str(ct.db["hour"])+":00", ct.db["day"], ct.db["month"][0], ct.db["year"], window["log_input"].Get()))
@@ -43,42 +59,49 @@ while True:
             
         except:
             print("UNABLE TO LOG")
+            error("Unable to print to log.txt")
             
-        #else:
             
-     #   sleep(0.5)
-      #  window["log_input"].Update("", background_color="white")
-            
-      #  window["log_input"].Update(disabled=False)
-            
-    elif event == "Open Log":
+    elif event == "Open Log":  #opens log file
         try:
             startfile("log.txt")
         except:
-            print("UNABLE TO OPEN LOG FILE")
-            log=open("log.txt", "a")
-            log.close()
-            startfile("log.txt")
+            
+            try:
+                log=open("log.txt", "a")
+                log.close()
+                startfile("log.txt")
+            except:
+                print("UNABLE TO OPEN LOG FILE")
+                error("Unable to open log.txt")
     
-    elif event == "Submit":
+    elif event == "Submit" or focused_enter=="time":  #Sumbits changes to database time and updates day conditions
+        
+        focused_enter=None
+        
         try:
             h=int(window["hour_input"].Get())
             d=int(window["day_input"].Get())
         except:
             print("INVALID ENTRY")
+            error("Invalid time input \"{}, {}\" detected".format(window["hour_input"].Get(),window["day_input"].Get()))
             pass
         else:
             ct.hour(h)
             ct.day(d)
             ct.save()
             update_values=["{}:00".format(ct.db["hour"]), ct.db["day"], ct.db["tenday"], "{}. {}".format(ct.db["month"][0],ct.db["month"][1]), ct.db["year"]]+[ct.db["temperature"], ct.db["precipitation"]]+[ct.db["windspeed"], ct.db["wind_dir"]]
-            ct.show_all()
-            print("\n")
+      #      ct.show_all()
+       #     print("\n")
             for i in range(len(updatable)):
                 window[updatable[i]].Update(update_values[i])
-            window["hour_input"].Update("0")
-            window["day_input"].Update("0")    
-    else:
-        print (event)
+        window["hour_input"].Update("0")
+        window["day_input"].Update("0")    
+    
+    
+    
+   # else:
+   #     print ("|{}|".format(event))  
+       
 
 window.close()
