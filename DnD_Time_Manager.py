@@ -57,6 +57,10 @@ while True:
             log.close()    
             window["log_input"].Update("")
             
+        except PermissionError as e:
+            print("UNABLE TO LOG")
+            error("Unable to print to log.txt - "+str(e))
+            
         except:
             print("UNABLE TO LOG")
             error("Unable to print to log.txt")
@@ -71,6 +75,10 @@ while True:
                 log=open("log.txt", "a")
                 log.close()
                 startfile("log.txt")
+                
+            except PermissionError as e:
+                print("UNABLE TO LOG")
+                error("Unable to print to log.txt - "+str(e))
             except:
                 print("UNABLE TO OPEN LOG FILE")
                 error("Unable to open log.txt")
