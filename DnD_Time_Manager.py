@@ -4,14 +4,24 @@ from os import startfile
 from time import sleep
 from error import error
 
+VERSION="0.4.0 + DEV"
+
+
+
 QT_ENTER_KEY1 =  'special 16777220'
 QT_ENTER_KEY2 =  'special 16777221'
-
 focused_enter=None
 
 #sg.theme("DarkRed1")
 
-layout=[
+menu_dict={
+            "File": ["Open...", "Preferences"],
+            "Help": ["About", "ReadMe::readme", "Source Code::source_code"]
+          }
+
+main_layout=[
+        [sg.Menu([[i,menu_dict[i]] for i in menu_dict], visible=False)],
+        
         [sg.Text("Time")],
        
         [sg.InputText("{}:00".format(ct.db["hour"]),size=(6,1), readonly=True,key="hour_display", tooltip="Time - 24 hour"),   sg.InputText(ct.db["day"], size=(3,1), readonly=True,key="day_display", tooltip="Day of the month"),   sg.InputText(ct.db["tenday"], size=(2,1), readonly=True,key="tenday_display", tooltip="Tenday"),   sg.InputText("{}. {}".format(ct.db["month"][0],ct.db["month"][1]), size=(30,1), readonly=True,key="month_display", tooltip="Month"),   sg.InputText(ct.db["year"], size=(5,1), readonly=True,key="year_display", tooltip="Year - DR")],
@@ -22,12 +32,12 @@ layout=[
        
         [sg.Text("Time Adjustment"), sg.InputText("0", size=(5,1), key="hour_input", tooltip="Hour Change"), sg.InputText("0", size=(5,1), key="day_input", tooltip="Day Change"), sg.Button("Submit")],
         
-        [sg.InputText(size=(40,1), key="log_input", tooltip="Log Input"), sg.Button("Log"), sg.Button("Open Log")]
+        [sg.InputText(size=(40,1), key="log_input", tooltip="Log Input"), sg.Button("Log"), sg.VerticalSeparator(color="gray"), sg.Button("Open Log")]
         ]
 
 updatable=["hour_display", "day_display", "tenday_display", "month_display", "year_display"]+["temp_display", "precip_display"]+["WS_display", "WD_display"]
 
-window=sg.Window("D&D Time Manager", layout, finalize=True, icon="dnd_logo.ico", return_keyboard_events=True)
+window=sg.Window("D&D Time Manager", main_layout, finalize=True, icon="dnd_logo.ico", return_keyboard_events=True)
 
 
 
@@ -104,12 +114,29 @@ while True:
             for i in range(len(updatable)):
                 window[updatable[i]].Update(update_values[i])
         window["hour_input"].Update("0")
-        window["day_input"].Update("0")    
+        window["day_input"].Update("0")
     
     
     
+# Menu Events -----------------------------------------------------------------------
+    
+    elif event.endswith("::readme"):
+        try:
+            startfile("https://github.com/JP-Carr/DnD_Time_Manager/blob/master/README.md")  
+        except:
+            try:
+                startfile("README.md")
+            except:
+                pass
+    
+
+    elif event.endswith("::source_code"):
+        try:
+            startfile("https://github.com/JP-Carr/DnD_Time_Manager")  
+        except:
+            pass
    # else:
-   #     print ("|{}|".format(event))  
+    #    print (event)  
        
 
 window.close()
