@@ -246,6 +246,7 @@ while True:
     elif event.endswith("::delete_campaign"):
         if popup.choice_box(text="Are you sure you want to delete campaign \"{}\"?".format(campaign), window_name="Delete Campaign")==True:
             send2trash(camp_dir)
+            pref["last campaign"].remove(campaign)
             popup.alert_box(text="Campaign deleted", sound=False, window_name="Delete Campaign")
             if len(listdir("campaigns"))!=0: #loads most recent possible campaign
                 for i in pref["last campaign"]:
