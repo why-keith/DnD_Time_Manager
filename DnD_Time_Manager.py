@@ -39,6 +39,8 @@ if len(listdir("campaigns"))==0 or campaign==None:
 
 pref["last campaign"].insert(0, campaign)
 pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
+recent_camps=pref["last campaign"][0:3]
+#window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
 pickler("pref.pkl", pref)    
     
 print(pref["last campaign"])
@@ -59,12 +61,12 @@ focused_enter=None
 
 
 menu_dict={
-            "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", ["LMoP","SKT"], "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Preferences::preferences"],
+            "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Preferences::preferences"],
             "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
           }
 
 main_layout=[
-        [sg.Menu([[i,menu_dict[i]] for i in menu_dict], visible=False)],
+        [sg.Menu([[i,menu_dict[i]] for i in menu_dict], visible=False, key="menu_bar")],
         
         [sg.Text("Time")],
        
@@ -184,6 +186,13 @@ while True:
         window["log_input"].Update("")
         
         pref["last campaign"].insert(0, campaign)
+        pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
+        recent_camps=pref["last campaign"][0:3]
+        menu_dict={
+            "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Preferences::preferences"],
+            "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
+          }
+        window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
         pickler("pref.pkl", pref)
 
 
@@ -214,6 +223,13 @@ while True:
             window["log_input"].Update("")
             
             pref["last campaign"].insert(0, campaign)
+            pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
+            recent_camps=pref["last campaign"][0:3]
+            menu_dict={
+            "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Preferences::preferences"],
+            "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
+          }
+            window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
             pickler("pref.pkl", pref)
             
         if path=="":
@@ -238,6 +254,13 @@ while True:
                 camp_dir="campaigns/"+campaign
                 window.set_title("D&D Time Manager - "+campaign)
                 pref["last campaign"].insert(0, campaign)
+                pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
+                recent_camps=pref["last campaign"][0:3]
+                menu_dict={
+            "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Preferences::preferences"],
+            "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
+          }
+                window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
                 pickler("pref.pkl", pref)
                 popup.alert_box(text="Rename sucessful", sound=False, window_name="Rename")
             
@@ -264,6 +287,12 @@ while True:
             
             pref["last campaign"].insert(0, campaign)
             pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
+            recent_camps=pref["last campaign"][0:3]
+            menu_dict={
+            "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Preferences::preferences"],
+            "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
+          }
+            window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
             pickler("pref.pkl", pref)    
                 
             print(pref["last campaign"])
@@ -282,6 +311,14 @@ while True:
             window["log_input"].Update("")
             
             pref["last campaign"].insert(0, campaign)
+            pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
+            recent_camps=pref["last campaign"][0:3]
+            menu_dict={
+            "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Preferences::preferences"],
+            "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
+          }
+            window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
+            
             pickler("pref.pkl", pref)
         
     
@@ -308,6 +345,33 @@ while True:
         except:
             pass
         
+    elif event in recent_camps:
+        
+        if event!=campaign:
+            print(0)
+            camp_dir="campaigns/"+event
+            for file in listdir(camp_dir):
+                    if file.endswith(".pkl"):
+                        campaign=file.split(".")[0]
+                        db=unpickle(camp_dir+"/"+file) 
+                        update_values=["{}:00".format(db.hour), db.day, db.tenday, "{}. {}".format(db.month[0],db.month[1]), db.year]+[db.temperature, db.precipitation]+[db.windspeed, db.wind_dir]
+                        break
+            for i in range(len(updatable)):
+                window[updatable[i]].Update(update_values[i])
+            window.set_title("D&D Time Manager - "+campaign)
+            window["hour_input"].Update("0")
+            window["day_input"].Update("0")
+            window["log_input"].Update("")
+            
+            pref["last campaign"].insert(0, campaign)
+            pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
+            recent_camps=pref["last campaign"][0:3]
+            menu_dict={
+                "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Preferences::preferences"],
+                "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
+              }
+            window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
+            pickler("pref.pkl", pref)
     
   #  else:
    #     print (event)  
