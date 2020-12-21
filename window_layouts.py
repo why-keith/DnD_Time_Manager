@@ -4,13 +4,18 @@ from os import listdir, mkdir
 from database_class import db, pickler
 from sys import exit
 
+QT_ENTER_KEY1 =  'special 16777220'
+QT_ENTER_KEY2 =  'special 16777221'
+
+icon_path="dnd_logo.ico"
+
 def alert_box(text="TEXT HERE", window_name="ALERT", button_text="OK", sound=True, theme=None):
     sg.theme(theme)
     layout=[
             [sg.Text("  "+text+"  ")],
             [sg.Button(button_text)]
             ]
-    window=sg.Window(window_name, layout, finalize=True, icon=None, element_justification="center", force_toplevel=True,disable_minimize=True)
+    window=sg.Window(window_name, layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=True, return_keyboard_events=True, )
     if sound==True:
         print("\a")
     
@@ -19,7 +24,7 @@ def alert_box(text="TEXT HERE", window_name="ALERT", button_text="OK", sound=Tru
         if event == sg.WIN_CLOSED:
             window.close()
             return
-        elif event==button_text:
+        elif event==button_text or event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
             window.close()
             return
             
@@ -30,7 +35,7 @@ def choice_box(text, window_name="", theme=None):
             [sg.Text(text)],
             [sg.Button("Yes"), sg.Button("No")]
             ]
-    window=sg.Window(window_name, layout, finalize=True, icon=None, element_justification="center", force_toplevel=True,disable_minimize=True)
+    window=sg.Window(window_name, layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=True, )
     print("\a")
     
     while True:
@@ -53,10 +58,20 @@ def create_campaign(first=False, theme=None):
             [sg.Text("Name"), sg.InputText("", size=(25,1), key="campaign_name")],
             [sg.Button("Create")]
             ]
-    window=sg.Window("New...", layout, finalize=True, icon=None, element_justification="center", force_toplevel=True,disable_minimize=False)
+    window=sg.Window("New...", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False, return_keyboard_events=True, )
 
     while True:
         event, values = window.read()
+        focused_enter=None
+     #   print(event)
+        if event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
+            active_element=window.FindElementWithFocus()          #Dectects if the enter key has been pressed and checks which element is active
+            print(active_element)
+            
+            if active_element==window["campaign_name"]:
+                focused_enter="campaign_name"
+
+        
         if event == sg.WIN_CLOSED and first==False:
             window.close()
             return 
@@ -65,7 +80,7 @@ def create_campaign(first=False, theme=None):
             exit()
             return
         
-        elif event=="Create":
+        elif event=="Create" or focused_enter=="campaign_name":
             name=window["campaign_name"].Get()
             
             try:
@@ -77,7 +92,7 @@ def create_campaign(first=False, theme=None):
                     
                     new_db=db()
                     mkdir(_dir)
-                    pickler(_dir+"/{}.pkl".format(name,name), new_db)
+                    pickler(_dir+"/{}.pkl".format(name), new_db)
                     
                     window.close()
                     return name
@@ -98,15 +113,25 @@ def rename_window(old_name, theme=None):
             [sg.Button("Confirm"), sg.Button("Cancel")]
             ]
     
-    window=sg.Window("Rename", layout, finalize=True, icon=None, element_justification="center", force_toplevel=True,disable_minimize=False)
+    window=sg.Window("Rename", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False, return_keyboard_events=True)
   
     while True:
         event, values = window.read()
+        
+        focused_enter=None
+     #   print(event)
+        if event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
+            active_element=window.FindElementWithFocus()          #Dectects if the enter key has been pressed and checks which element is active
+            print(active_element)
+            
+            if active_element==window["campaign_name"]:
+                focused_enter="campaign_name"
+        
         if event == sg.WIN_CLOSED:
             window.close()
             return 
 
-        elif event=="Confirm":
+        elif event=="Confirm" or focused_enter=="campaign_name":
             name=window["campaign_name"].Get()
             if name!="" and name not in listdir():
                 window.close()
