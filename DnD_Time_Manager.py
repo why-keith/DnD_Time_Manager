@@ -14,6 +14,22 @@ from send2trash import send2trash
 VERSION="v0.4.0 + DEV"
 
 
+def update_menu():
+    global recent_camps, menu_dict, window
+    
+    recent_camps=pref["last campaign"][0:3]
+    menu_dict={
+        "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Open save directory...::save_directory", ],#"Preferences::preferences"],
+        "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
+      }
+    try:
+        window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
+    except NameError: 
+        pass
+    
+    return menu_dict
+
+
 if "pref.pkl" in listdir():
     pref=unpickle("pref.pkl")
     
@@ -59,11 +75,12 @@ QT_ENTER_KEY2 =  'special 16777221'
 focused_enter=None
 
 
+#menu_dict={
+ #           "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Open save directory...::save_directory", "Preferences::preferences"],
+  #          "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
+   #       }
 
-menu_dict={
-            "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Preferences::preferences"],
-            "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
-          }
+menu_dict=update_menu()
 
 main_layout=[
         [sg.Menu([[i,menu_dict[i]] for i in menu_dict], visible=False, key="menu_bar")],
@@ -89,8 +106,10 @@ window=sg.Window("D&D Time Manager - "+campaign, main_layout, finalize=True, ico
 
 while True:
     event, values = window.read()
+    focused_enter=None
     
     if event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
+       
         active_element=window.FindElementWithFocus()          #Dectects if the enter key has been pressed and checks which element is active
         if active_element==window["log_input"]:
             focused_enter="log"
@@ -102,9 +121,7 @@ while True:
         break
     
     elif event=="Log" or focused_enter=="log":    #submits log 
-        focused_enter=None
         
-
         try:
             log=open("{}/{}.txt".format(camp_dir,campaign), "a")
             log.write("{} {}/{}/{} - {}\n".format(str(db.hour)+":00", db.day, db.month[0], db.year, window["log_input"].Get()))
@@ -113,35 +130,38 @@ while True:
             window["log_input"].Update("")
             
         except PermissionError as e:
-            print("UNABLE TO LOG")
-            error("Unable to print to log.txt - "+str(e))
+            print("UNABLE TO LOG - PermissionError")
+            error("Unable to print to {}.txt - PermissionError".format(campaign))
             
-        except:
+        except Exception as e:
             print("UNABLE TO LOG")
-            error("Unable to print to log.txt")
+            error("Unable to print to {}.txt".format(campaign)+str(e))
             
             
     elif event == "Open Log":  #opens log file
         try:
             startfile(abspath("{}/{}.txt".format(camp_dir,campaign)))
+      #  except FileNotFoundError as e:            
+       #error("Unable to open {}.txt".format(campaign)+str(e))
+            
         except Exception as e:
-           # print(e)
+            print(e)
             try:
                 log=open("{}/{}.txt".format(camp_dir,campaign), "a")
                 log.close()
                 startfile(abspath("{}/{}.txt".format(camp_dir,campaign)))
                 
-            except PermissionError as e:
-                print("UNABLE TO LOG")
-                error("Unable to print to log.txt - "+str(e))
-            except Exception as e:
-                print(e)
-                print("UNABLE TO OPEN LOG FILE")
-                error("Unable to open {}.txt".format(campaign))
+           # except PermissionError as e2:
+            #    print("UNABLE TO LOG FILE")
+             #   error("Unable to open {}.txt".format(campaign)+str(e2))
+            except Exception as e2:
+                print(e2)
+                print("UNABLE TO CREATE LOG FILE")
+                error("Unable to create {}.txt".format(campaign)+str(e2))
     
     elif event == "Submit" or focused_enter=="time":  #Sumbits changes to database time and updates day conditions
         
-        focused_enter=None
+      #  focused_enter=None
         
         try:
             h=int(window["hour_input"].Get())
@@ -168,32 +188,35 @@ while True:
     
     elif event.endswith("::new_campaign"):
         campaign=popup.create_campaign(first=False)
-        print(campaign)
         
-       # path="campaigns/"+campaign
-        camp_dir="campaigns/"+campaign
-        for file in listdir(camp_dir):
-                if file.endswith(".pkl"):
-                    campaign=file.split(".")[0]
-                    db=unpickle(camp_dir+"/"+file) 
-                    update_values=["{}:00".format(db.hour), db.day, db.tenday, "{}. {}".format(db.month[0],db.month[1]), db.year]+[db.temperature, db.precipitation]+[db.windspeed, db.wind_dir]
-                    break
-        for i in range(len(updatable)):
-            window[updatable[i]].Update(update_values[i])
-        window.set_title("D&D Time Manager - "+campaign)
-        window["hour_input"].Update("0")
-        window["day_input"].Update("0")
-        window["log_input"].Update("")
-        
-        pref["last campaign"].insert(0, campaign)
-        pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
-        recent_camps=pref["last campaign"][0:3]
-        menu_dict={
-            "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Preferences::preferences"],
-            "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
-          }
-        window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
-        pickler("pref.pkl", pref)
+        if campaign!=None:
+            print(campaign)
+            camp_dir="campaigns/"+campaign
+            for file in listdir(camp_dir):
+                    if file.endswith(".pkl"):
+                        campaign=file.split(".")[0]
+                        db=unpickle(camp_dir+"/"+file) 
+                        update_values=["{}:00".format(db.hour), db.day, db.tenday, "{}. {}".format(db.month[0],db.month[1]), db.year]+[db.temperature, db.precipitation]+[db.windspeed, db.wind_dir]
+                        break
+            for i in range(len(updatable)):
+                window[updatable[i]].Update(update_values[i])
+            window.set_title("D&D Time Manager - "+campaign)
+            window["hour_input"].Update("0")
+            window["day_input"].Update("0")
+            window["log_input"].Update("")
+            
+            pref["last campaign"].insert(0, campaign)
+            pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
+            """
+            recent_camps=pref["last campaign"][0:3]
+            menu_dict={
+                "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Open save directory...::save_directory", "Preferences::preferences"],
+                "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
+              }
+            window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
+            """
+            update_menu()
+            pickler("pref.pkl", pref)
 
 
 
@@ -206,31 +229,40 @@ while True:
             print("Invalid Folder Path\n")
             print(e)
             pass
+        
         else:
             print(path)
-            for file in listdir(path):
-                if file.endswith(".pkl"):
-                    campaign=file.split(".")[0]
-                    camp_dir="campaigns/"+campaign
-                    db=unpickle(path+"/"+file) 
-                    update_values=["{}:00".format(db.hour), db.day, db.tenday, "{}. {}".format(db.month[0],db.month[1]), db.year]+[db.temperature, db.precipitation]+[db.windspeed, db.wind_dir]
-                    break
-            for i in range(len(updatable)):
-                window[updatable[i]].Update(update_values[i])
-            window.set_title("D&D Time Manager - "+campaign)
-            window["hour_input"].Update("0")
-            window["day_input"].Update("0")
-            window["log_input"].Update("")
+            try:
+                for file in listdir(path):
+                    if file.endswith(".pkl"):
+                        campaign=file.split(".")[0]
+                        camp_dir="campaigns/"+campaign
+                        db=unpickle(path+"/"+file) 
+                        update_values=["{}:00".format(db.hour), db.day, db.tenday, "{}. {}".format(db.month[0],db.month[1]), db.year]+[db.temperature, db.precipitation]+[db.windspeed, db.wind_dir]
+                        break
+            except Exception as e:
+                print(e)
             
-            pref["last campaign"].insert(0, campaign)
-            pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
-            recent_camps=pref["last campaign"][0:3]
-            menu_dict={
-            "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Preferences::preferences"],
-            "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
-          }
-            window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
-            pickler("pref.pkl", pref)
+            else:        
+                for i in range(len(updatable)):
+                    window[updatable[i]].Update(update_values[i])
+                window.set_title("D&D Time Manager - "+campaign)
+                window["hour_input"].Update("0")
+                window["day_input"].Update("0")
+                window["log_input"].Update("")
+                
+                pref["last campaign"].insert(0, campaign)
+                pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
+                """
+                recent_camps=pref["last campaign"][0:3]
+                menu_dict={
+                "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Open save directory...::save_directory", "Preferences::preferences"],
+                "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
+              }
+                window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
+                """
+                update_menu()
+                pickler("pref.pkl", pref)
             
         if path=="":
             print("Invalid Folder Path\n")
@@ -250,17 +282,22 @@ while True:
                 print(e)
             else:
                 rmdir(camp_dir)
+                old_campaign=campaign
                 campaign=new_campaign
                 camp_dir="campaigns/"+campaign
                 window.set_title("D&D Time Manager - "+campaign)
                 pref["last campaign"].insert(0, campaign)
+                pref["last campaign"].remove(old_campaign)
                 pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
+                """
                 recent_camps=pref["last campaign"][0:3]
                 menu_dict={
-            "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Preferences::preferences"],
+            "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Open save directory...::save_directory", "Preferences::preferences"],
             "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
           }
                 window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
+                """
+                update_menu()
                 pickler("pref.pkl", pref)
                 popup.alert_box(text="Rename sucessful", sound=False, window_name="Rename")
             
@@ -287,12 +324,15 @@ while True:
             
             pref["last campaign"].insert(0, campaign)
             pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
+            """
             recent_camps=pref["last campaign"][0:3]
             menu_dict={
-            "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Preferences::preferences"],
+            "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Open save directory...::save_directory", "Preferences::preferences"],
             "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
           }
             window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
+            """
+            update_menu()
             pickler("pref.pkl", pref)    
                 
             print(pref["last campaign"])
@@ -309,25 +349,34 @@ while True:
             window["hour_input"].Update("0")
             window["day_input"].Update("0")
             window["log_input"].Update("")
+     
             
             pref["last campaign"].insert(0, campaign)
             pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
+            """
             recent_camps=pref["last campaign"][0:3]
             menu_dict={
-            "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Preferences::preferences"],
+            "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Open save directory...::save_directory", "Preferences::preferences"],
             "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
           }
             window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
-            
+            """
+            update_menu()
             pickler("pref.pkl", pref)
-        
+            
+       
+    elif event.endswith("::save_directory"):
+        startfile("campaigns")
+    
     
     elif event.endswith("::preferences"):
         pass
     
+    
     elif event.endswith("::about"):
         about_text="D&D Time Manager\nVersion: {}".format(VERSION)
         popup.alert_box(text=about_text, window_name="About", button_text="Close", sound=False)
+    
     
     elif event.endswith("::readme"):
         try:
@@ -344,37 +393,62 @@ while True:
             startfile("https://github.com/JP-Carr/DnD_Time_Manager")  
         except:
             pass
+     
         
     elif event in recent_camps:
-        
+        print(event)
         if event!=campaign:
             print(0)
-            camp_dir="campaigns/"+event
-            for file in listdir(camp_dir):
+            
+            try:
+                #camp_dir="campaigns/"+event
+                for file in listdir("campaigns/"+event):
                     if file.endswith(".pkl"):
+                        camp_dir="campaigns/"+event
                         campaign=file.split(".")[0]
                         db=unpickle(camp_dir+"/"+file) 
                         update_values=["{}:00".format(db.hour), db.day, db.tenday, "{}. {}".format(db.month[0],db.month[1]), db.year]+[db.temperature, db.precipitation]+[db.windspeed, db.wind_dir]
                         break
-            for i in range(len(updatable)):
-                window[updatable[i]].Update(update_values[i])
-            window.set_title("D&D Time Manager - "+campaign)
-            window["hour_input"].Update("0")
-            window["day_input"].Update("0")
-            window["log_input"].Update("")
+            except FileNotFoundError:
+                pref["last campaign"].remove(event)
+                """
+                recent_camps=pref["last campaign"][0:3]
+                menu_dict={
+                    "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Open save directory...::save_directory", "Preferences::preferences"],
+                    "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
+                    }
+                window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
+                """
+                update_menu()
+                popup.alert_box("Unable to load campaign \"{}\"".format(event))
+                
+            except Exception as e:
+                print(e)
             
-            pref["last campaign"].insert(0, campaign)
-            pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
-            recent_camps=pref["last campaign"][0:3]
-            menu_dict={
-                "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Preferences::preferences"],
-                "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
-              }
-            window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
-            pickler("pref.pkl", pref)
+            else:
+                for i in range(len(updatable)):
+                    window[updatable[i]].Update(update_values[i])
+                window.set_title("D&D Time Manager - "+campaign)
+                window["hour_input"].Update("0")
+                window["day_input"].Update("0")
+                window["log_input"].Update("")
+                
+                pref["last campaign"].insert(0, campaign)
+                pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
+                """
+                recent_camps=pref["last campaign"][0:3]
+                menu_dict={
+                    "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Open save directory...::save_directory", "Preferences::preferences"],
+                    "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
+                  }
+                window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
+                """
+                update_menu()
+                pickler("pref.pkl", pref)
     
   #  else:
    #     print (event)  
+       
        
 
 window.close()
