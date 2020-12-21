@@ -38,6 +38,9 @@ else:
     pickler("pref.pkl", pref)
     print("new pref file created")
     
+if "campaigns" not in listdir():
+    mkdir("campaigns")
+    
 campaign=None
 if len(listdir("campaigns"))!=0: #loads most recent possible campaign
     for i in pref["last campaign"]:
