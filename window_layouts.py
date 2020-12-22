@@ -3,6 +3,7 @@ from time import sleep
 from os import listdir, mkdir
 from database_class import db, pickler
 from sys import exit
+import custom_themes
 
 QT_ENTER_KEY1 =  'special 16777220'
 QT_ENTER_KEY2 =  'special 16777221'
@@ -100,9 +101,42 @@ def create_campaign(first=False, theme=None):
                 alert_box(text="\"{}\" is not a valid campaign name".format(name))
                 pass
                 
-def pref_window(theme=None):
-    themes=[None, "Black", "DarkRed1"]
+def pref_window(pref, theme=None):
+    sg.theme(theme)
+  #  themes=["Default", "Black", "DarkRed1", "SandyBeach"]
+    #themes=["Black", "BlueMono", "BluePurple", "BrightColors", "BrownBlue", "Dark", "Dark2", "DarkAmber", "DarkBlack", "DarkBlack1", "DarkBlue", "DarkBlue1", "DarkBlue10", "DarkBlue11", "DarkBlue12", "DarkBlue13", "DarkBlue14", "DarkBlue15", "DarkBlue16", "DarkBlue17", "DarkBlue2", "DarkBlue3", "DarkBlue4", "DarkBlue5", "DarkBlue6", "DarkBlue7", "DarkBlue8", "DarkBlue9", "DarkBrown", "DarkBrown1", "DarkBrown2", "DarkBrown3", "DarkBrown4", "DarkBrown5", "DarkBrown6", "DarkGreen", "DarkGreen1", "DarkGreen2", "DarkGreen3", "DarkGreen4", "DarkGreen5", "DarkGreen6", "DarkGrey", "DarkGrey1", "DarkGrey2", "DarkGrey3", "DarkGrey4", "DarkGrey5", "DarkGrey6", "DarkGrey7", "DarkPurple", "DarkPurple1", "DarkPurple2", "DarkPurple3", "DarkPurple4", "DarkPurple5", "DarkPurple6", "DarkRed", "DarkRed1", "DarkRed2", "DarkTanBlue", "DarkTeal", "DarkTeal1", "DarkTeal10", "DarkTeal11", "DarkTeal12", "DarkTeal2", "DarkTeal3", "DarkTeal4", "DarkTeal5", "DarkTeal6", "DarkTeal7", "DarkTeal8", "DarkTeal9", "Default", "Default1", "DefaultNoMoreNagging", "Green", "GreenMono", "GreenTan", "HotDogStand", "Kayak", "LightBlue", "LightBlue1", "LightBlue2", "LightBlue3", "LightBlue4", "LightBlue5", "LightBlue6", "LightBlue7", "LightBrown", "LightBrown1", "LightBrown10", "LightBrown11", "LightBrown12", "LightBrown13", "LightBrown2", "LightBrown3", "LightBrown4", "LightBrown5", "LightBrown6", "LightBrown7", "LightBrown8", "LightBrown9", "LightGray1", "LightGreen", "LightGreen1", "LightGreen10", "LightGreen2", "LightGreen3", "LightGreen4", "LightGreen5", "LightGreen6", "LightGreen7", "LightGreen8", "LightGreen9", "LightGrey", "LightGrey1", "LightGrey2", "LightGrey3", "LightGrey4", "LightGrey5", "LightGrey6", "LightPurple", "LightTeal", "LightYellow", "Material1", "Material2", "NeutralBlue", "Purple", "Reddit", "Reds", "SandyBeach", "SystemDefault", "SystemDefault1", "SystemDefaultForReal", "Tan", "TanBlue", "TealMono", "Topanga"]
+    themes=custom_themes.themes
+    theme_len=0
+    for i in themes:
+        if len(i)>theme_len:
+            theme_len=len(i)
     
+    
+    layout=[
+           # [sg.Text("saewfafffffffffffffffffffffffffffffff")],
+            [sg.Text("Theme (requires restart)"), sg.Combo(themes, key="themes", size=(theme_len+2, 1), default_value=theme)],
+            [sg.Button("Save"), sg.Button("Cancel")]
+            ]
+    window=sg.Window("Preferences", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False)
+  
+    while True:
+        event, values = window.read()
+        if event == sg.WIN_CLOSED or event=="Cancel":
+            save=False
+            break
+        
+        elif event=="Save":
+            save=True
+            if window["themes"].Get() in themes:
+                pref["new_theme"]=window["themes"].Get()
+            
+                
+            print(pref["theme"])
+            break
+        
+    window.close()        
+    return pref, save
+            
     
 def rename_window(old_name, theme=None):
     sg.theme(theme)
@@ -127,7 +161,7 @@ def rename_window(old_name, theme=None):
             if active_element==window["campaign_name"]:
                 focused_enter="campaign_name"
         
-        if event == sg.WIN_CLOSED:
+        if event == sg.WIN_CLOSED or event=="Cancel":
             window.close()
             return 
 
@@ -140,6 +174,26 @@ def rename_window(old_name, theme=None):
                 if name in listdir():                 
                     alert_box(text="Campaign \"{}\" already exists".format(name))
                     pass
+                
+def test_window(theme=None):
+    sg.theme(theme)
+    c1=[sg.Button("Confirm"), sg.Button("Cancel")]
+    layout=[
+            [sg.Text("test")],
+            [sg.HorizontalSeparator(color="gray")],
+            [sg.Text("New name"), sg.InputText("", size=(25,1), key="campaign_name")],
+            #[sg.Button("Confirm"), sg.Button("Cancel")],
+            [sg.Column(c1)]
+            ]
+    
+    window=sg.Window("Preferences", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False)
+  
+    while True:
+        event, values = window.read()
+        if event == sg.WIN_CLOSED:
+            break
+    window.close()
+    
+if __name__=="__main__":  
                     
-        elif event=="Cancel":
-            window.close()
+    test_window()

@@ -10,16 +10,17 @@ from default_pref import new_pref
 from tkinter import Tk
 from tkinter.filedialog import askdirectory
 from send2trash import send2trash
+#import custom_themes
 
 VERSION="v0.4.0 + DEV"
 
-
 def update_menu():
+
     global recent_camps, menu_dict, window
     
     recent_camps=pref["last campaign"][0:3]
     menu_dict={
-        "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Open save directory...::save_directory", ],#"Preferences::preferences"],
+        "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Open save directory...::save_directory", "Preferences::preferences"],
         "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
       }
     try:
@@ -54,7 +55,7 @@ if campaign==None:
             campaign=file
 print(campaign)        
 if len(listdir("campaigns"))==0 or campaign==None:
-    campaign=popup.create_campaign(first=True)
+    campaign=popup.create_campaign(first=True, theme=pref["theme"])
 
 pref["last campaign"].insert(0, campaign)
 pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
@@ -68,15 +69,14 @@ camp_dir="campaigns/"+campaign
     
 db=unpickle(camp_dir+"/"+campaign+".pkl")    
 
-
-#pref["theme"]=None
+#pref["theme"]="Fighter"
 
 ################################################################################
+
 sg.theme(pref["theme"])
 QT_ENTER_KEY1 =  'special 16777220'
 QT_ENTER_KEY2 =  'special 16777221'
 focused_enter=None
-
 
 #menu_dict={
  #           "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Open save directory...::save_directory", "Preferences::preferences"],
@@ -190,7 +190,7 @@ while True:
 # Menu Events -----------------------------------------------------------------------
     
     elif event.endswith("::new_campaign"):
-        campaign=popup.create_campaign(first=False)
+        campaign=popup.create_campaign(first=False, theme=pref["theme"])
         
         if campaign!=None:
             print(campaign)
@@ -210,14 +210,7 @@ while True:
             
             pref["last campaign"].insert(0, campaign)
             pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
-            """
-            recent_camps=pref["last campaign"][0:3]
-            menu_dict={
-                "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Open save directory...::save_directory", "Preferences::preferences"],
-                "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
-              }
-            window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
-            """
+
             update_menu()
             pickler("pref.pkl", pref)
 
@@ -256,14 +249,7 @@ while True:
                 
                 pref["last campaign"].insert(0, campaign)
                 pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
-                """
-                recent_camps=pref["last campaign"][0:3]
-                menu_dict={
-                "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Open save directory...::save_directory", "Preferences::preferences"],
-                "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
-              }
-                window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
-                """
+
                 update_menu()
                 pickler("pref.pkl", pref)
             
@@ -273,7 +259,7 @@ while True:
 
     elif event.endswith("::rename_campaign"):
         
-        new_campaign=popup.rename_window(campaign)
+        new_campaign=popup.rename_window(campaign, theme=pref["theme"])
         if new_campaign!=None:
             try:
                 mkdir(r"campaigns/{}".format(new_campaign))
@@ -281,7 +267,7 @@ while True:
                     file_type=file.split(".")[-1]
                     rename(r"{}/{}".format(camp_dir,file), r"campaigns/{}/{}.{}".format(new_campaign,new_campaign,file_type))
             except Exception as e:
-                popup.alert_box(text="Unable to rename capaign")
+                popup.alert_box(text="Unable to rename capaign", theme=pref["theme"])
                 print(e)
             else:
                 rmdir(camp_dir)
@@ -292,25 +278,18 @@ while True:
                 pref["last campaign"].insert(0, campaign)
                 pref["last campaign"].remove(old_campaign)
                 pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
-                """
-                recent_camps=pref["last campaign"][0:3]
-                menu_dict={
-            "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Open save directory...::save_directory", "Preferences::preferences"],
-            "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
-          }
-                window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
-                """
+
                 update_menu()
                 pickler("pref.pkl", pref)
-                popup.alert_box(text="Rename sucessful", sound=False, window_name="Rename")
+                popup.alert_box(text="Rename sucessful", sound=False, window_name="Rename", theme=pref["theme"])
             
             
             
     elif event.endswith("::delete_campaign"):
-        if popup.choice_box(text="Are you sure you want to delete campaign \"{}\"?".format(campaign), window_name="Delete Campaign")==True:
+        if popup.choice_box(text="Are you sure you want to delete campaign \"{}\"?".format(campaign), window_name="Delete Campaign", theme=pref["theme"])==True:
             send2trash(camp_dir)
             pref["last campaign"].remove(campaign)
-            popup.alert_box(text="Campaign deleted", sound=False, window_name="Delete Campaign")
+            popup.alert_box(text="Campaign deleted", sound=False, window_name="Delete Campaign", theme=pref["theme"])
             if len(listdir("campaigns"))!=0: #loads most recent possible campaign
                 for i in pref["last campaign"]:
                     if i in listdir("campaigns") and exists("campaigns/{}/{}.pkl".format(i, i)):
@@ -323,18 +302,11 @@ while True:
                         campaign=file
             print(campaign)        
             if len(listdir("campaigns"))==0 or campaign==None:
-                campaign=popup.create_campaign(first=True)
+                campaign=popup.create_campaign(first=True, theme=pref["theme"])
             
             pref["last campaign"].insert(0, campaign)
             pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
-            """
-            recent_camps=pref["last campaign"][0:3]
-            menu_dict={
-            "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Open save directory...::save_directory", "Preferences::preferences"],
-            "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
-          }
-            window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
-            """
+
             update_menu()
             pickler("pref.pkl", pref)    
                 
@@ -356,14 +328,7 @@ while True:
             
             pref["last campaign"].insert(0, campaign)
             pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
-            """
-            recent_camps=pref["last campaign"][0:3]
-            menu_dict={
-            "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Open save directory...::save_directory", "Preferences::preferences"],
-            "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
-          }
-            window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
-            """
+
             update_menu()
             pickler("pref.pkl", pref)
             
@@ -373,12 +338,15 @@ while True:
     
     
     elif event.endswith("::preferences"):
-        pass
-    
+        pref, save_pref = popup.pref_window(pref, theme=pref["theme"])
+        if save_pref==True:
+            pickler("pref.pkl", pref)
+        #print(pref["theme"])
+        
     
     elif event.endswith("::about"):
         about_text="D&D Time Manager\nVersion: {}".format(VERSION)
-        popup.alert_box(text=about_text, window_name="About", button_text="Close", sound=False)
+        popup.alert_box(text=about_text, window_name="About", button_text="Close", sound=False, theme=pref["theme"])
     
     
     elif event.endswith("::readme"):
@@ -414,16 +382,8 @@ while True:
                         break
             except FileNotFoundError:
                 pref["last campaign"].remove(event)
-                """
-                recent_camps=pref["last campaign"][0:3]
-                menu_dict={
-                    "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Open save directory...::save_directory", "Preferences::preferences"],
-                    "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
-                    }
-                window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
-                """
                 update_menu()
-                popup.alert_box("Unable to load campaign \"{}\"".format(event))
+                popup.alert_box("Unable to load campaign \"{}\"".format(event), theme=pref["theme"])
                 
             except Exception as e:
                 print(e)
@@ -438,20 +398,13 @@ while True:
                 
                 pref["last campaign"].insert(0, campaign)
                 pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
-                """
-                recent_camps=pref["last campaign"][0:3]
-                menu_dict={
-                    "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Open save directory...::save_directory", "Preferences::preferences"],
-                    "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
-                  }
-                window["menu_bar"].Update(menu_definition=[[i,menu_dict[i]] for i in menu_dict])
-                """
+
                 update_menu()
                 pickler("pref.pkl", pref)
     
   #  else:
    #     print (event)  
        
-       
-
+pref["theme"]=pref["new_theme"]   
+pickler("pref.pkl", pref)
 window.close()

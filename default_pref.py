@@ -1,4 +1,4 @@
 new_pref={"last campaign": [],
-          "theme": None
-      
+          "theme": "Default",
+          "new_theme": "Default"
       }
