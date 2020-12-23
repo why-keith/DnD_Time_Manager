@@ -10,9 +10,9 @@ from default_pref import new_pref
 from tkinter import Tk
 from tkinter.filedialog import askdirectory
 from send2trash import send2trash
-#import custom_themes
+from urllib.request import urlopen
 
-VERSION="v0.5.0"
+VERSION="v0.5.1"
 
 def update_menu():
 
@@ -347,25 +347,28 @@ while True:
         
     
     elif event.endswith("::about"):
-        about_text="D&D Time Manager\nVersion: {}".format(VERSION)
+        about_text="D&D Time Manager\n    Version: {}".format(VERSION)
         popup.alert_box(text=about_text, window_name="About", button_text="Close", sound=False, theme=pref["theme"])
     
     
     elif event.endswith("::readme"):
         try:
-            startfile("https://github.com/JP-Carr/DnD_Time_Manager/blob/master/README.md")  
+            _=urlopen("https://github.com/")
         except:
-            try:
-                startfile("README.md")
-            except:
-                pass
+            startfile("README.md")
+        else:
+            startfile("https://github.com/JP-Carr/DnD_Time_Manager/blob/master/README.md")
     
 
     elif event.endswith("::source_code"):
         try:
-            startfile("https://github.com/JP-Carr/DnD_Time_Manager")  
+            _=urlopen("https://github.com/")
+            
         except:
-            pass
+            popup.alert_box(text="Unable to reach github.com")
+            
+        else:
+            startfile("https://github.com/JP-Carr/DnD_Time_Manager")  
      
         
     elif event in recent_camps:
