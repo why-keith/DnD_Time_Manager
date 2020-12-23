@@ -6,7 +6,7 @@ At present D&DTM is only available  as a standalone .zip archive for Microsoft W
 
 ## Usage
 To start the program, run "DnD_Time_Manager.exe". This will present you with the app's GUI:
-![GUI_v0.3.0](https://github.com/JP-Carr/DnD_Time_Manager/blob/media/Images/GUI/GUI_0.3.0.JPG)
+![GUI_v0.5.0](https://github.com/JP-Carr/DnD_Time_Manager/blob/media/Images/GUI/v0.5.0/GUI_0.5.0_Default.JPG)
 #### Layout
 * Row 1 - In-game time: Time(hh:mm), Day, Tenday, Month, Year
 * Row 2 - Temperature and precipitation level
@@ -16,6 +16,19 @@ To start the program, run "DnD_Time_Manager.exe". This will present you with the
 -----------------------------------
 Entering values in the time input boxes and clicking "Submit" will update the in-game time. Weather conditions are automatically rolled on a day change.
 The "Log" function allows for notes to be recorded from the GUI, the log is stored alongside the in-game time and date for easy reference.
+
+### Campaigns
+Each campaign is handled separately and can be edited and switched between at will. 
+
+## Updating to v0.5.0
+Due to the changes to campaigns, updating to v0.5.0 while keeping saved data requires further steps to work correctly.
+1. Backup db.pkl and log.txt from your install directory to a separate location
+2. Replace the old install with the new release version
+3. Run "DnD_Time_Manager.exe" and name your campaign
+4. Click "Open Log" to ensure a log file exists for this campaign
+5. Access the campaign directory through: File → Open save directory... → [campaign name]
+6. Replace the pkl and txt files found in this directory with the ones backed up in Step 1. Ensure that the old files renamed to match the newly created ones.
+7. Close and reopen "DnD_Time_Manager.exe"
 
 ## Disclaimer
 This is an unofficial piece of software and is in no way endorsed or sponsored by [Wizards of the Coast](https://company.wizards.com/)
