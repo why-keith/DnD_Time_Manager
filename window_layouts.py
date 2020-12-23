@@ -113,7 +113,8 @@ def pref_window(pref, theme=None):
     
     
     layout=[
-           # [sg.Text("saewfafffffffffffffffffffffffffffffff")],
+            [sg.Text("Appearance")],
+            [sg.HorizontalSeparator()],
             [sg.Text("Theme (requires restart)"), sg.Combo(themes, key="themes", size=(theme_len+2, 1), default_value=theme)],
             [sg.Button("Save"), sg.Button("Cancel")]
             ]
@@ -177,13 +178,13 @@ def rename_window(old_name, theme=None):
                 
 def test_window(theme=None):
     sg.theme(theme)
-    c1=[sg.Button("Confirm"), sg.Button("Cancel")]
+  #  c1=[sg.Button("Confirm"), sg.Button("Cancel")]
     layout=[
             [sg.Text("test")],
             [sg.HorizontalSeparator(color="gray")],
             [sg.Text("New name"), sg.InputText("", size=(25,1), key="campaign_name")],
             #[sg.Button("Confirm"), sg.Button("Cancel")],
-            [sg.Column(c1)]
+     
             ]
     
     window=sg.Window("Preferences", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False)
