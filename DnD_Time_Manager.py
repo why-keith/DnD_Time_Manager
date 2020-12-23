@@ -12,7 +12,7 @@ from tkinter.filedialog import askdirectory
 from send2trash import send2trash
 #import custom_themes
 
-VERSION="v0.4.0 + DEV"
+VERSION="v0.5.0"
 
 def update_menu():
 
