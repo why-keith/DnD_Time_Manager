@@ -340,11 +340,15 @@ while True:
     
     
     elif event.endswith("::preferences"):
-        pref, save_pref = popup.pref_window(pref, theme=pref["theme"])
+        new_pref, save_pref, raw_weather = popup.pref_window(pref, theme=pref["theme"], using_RAW=db.RAW)
         if save_pref==True:
+            pref=new_pref
             pickler("pref.pkl", pref)
-        #print(pref["theme"])
-        
+            
+            db.RAW=raw_weather
+            pickler(camp_dir+"/"+campaign+".pkl", db)
+            print(db.RAW)
+                
     
     elif event.endswith("::about"):
         about_text="D&D Time Manager\n    Version: {}".format(VERSION)
