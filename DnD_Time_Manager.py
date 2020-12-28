@@ -347,7 +347,9 @@ while True:
         if save_pref==True:
             pref=new_pref
             pickler("pref.pkl", pref)
-
+            
+            db.RAW=raw_weather
+            pickler(camp_dir+"/"+campaign+".pkl", db)
         
     elif event.endswith("::raw_time_out"):
         print(db.day_raw,db.hour)
