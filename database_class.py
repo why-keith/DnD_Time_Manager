@@ -51,7 +51,7 @@ class db:
             prob=0
         else:
             prob=5
-        
+     
         for i in range(abs(days)):
             x=[randint(0,prob) for i in range(4)]
             if x[0]==0:
@@ -95,9 +95,6 @@ class db:
             print("Time: {}:00".format(self.hour))
         except TypeError as e:
             print("INVALID TIME INCREMENT")
-            
-    def switch_RAW(self):
-        self.Raw = not self.Raw
 
 
 def pickler(path,obj):
