@@ -12,7 +12,7 @@ from tkinter.filedialog import askdirectory
 from send2trash import send2trash
 from urllib.request import urlopen
 
-VERSION="v0.5.1"
+VERSION="v0.6.0"
 
 def update_menu():
 
