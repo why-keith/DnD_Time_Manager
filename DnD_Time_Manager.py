@@ -12,7 +12,9 @@ from tkinter.filedialog import askdirectory
 from send2trash import send2trash
 from urllib.request import urlopen
 
-VERSION="v0.6.0"
+
+VERSION="v0.7.0"
+
 
 def update_menu():
 
@@ -341,15 +343,17 @@ while True:
     
     
     elif event.endswith("::preferences"):
-        pref, save_pref = popup.pref_window(pref, theme=pref["theme"])
+        new_pref, save_pref, raw_weather = popup.pref_window(pref, theme=pref["theme"], using_RAW=db.RAW)
         if save_pref==True:
+            pref=new_pref
             pickler("pref.pkl", pref)
-        #print(pref["theme"])
+
         
     elif event.endswith("::raw_time_out"):
         print(db.day_raw,db.hour)
         popup.alert_box(text="                   {} hours, {} days\n(This value can be accessed from the error log)".format(db.hour,db.day_raw), window_name="Raw Time", sound=False, theme=pref["theme"])
         error("Raw time request - {} hours, {} days".format(db.hour,db.day_raw), sound=False)
+
     
     elif event.endswith("::about"):
         about_text="D&D Time Manager\n    Version: {}".format(VERSION)

@@ -30,6 +30,7 @@ class db:
         self.wind_dir=choice(conditions.wind_dir)
         self.windspeed=choice(conditions.wind_speed)
         self.temperature= choice(conditions.temp)
+        self.RAW=False
   #      pickle.dump( self.day_data, open("db.pkl", "wb"))
     """
     def save():
@@ -46,8 +47,13 @@ class db:
            print("{}: {}".format(i,self.day_data[i]))
            
     def next_day(self, days=1):
+        if self.RAW==True:
+            prob=0
+        else:
+            prob=5
+     
         for i in range(abs(days)):
-            x=[randint(0,5) for i in range(4)]
+            x=[randint(0,prob) for i in range(4)]
             if x[0]==0:
                 self.precipitation=choice(conditions.precipitation)
             if x[1]==0:
