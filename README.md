@@ -1,12 +1,12 @@
 # D&D Time Manager
-D&D Time Manager is a simple application created for Microsoft Windows to allow Dungeon Masters to keep track of in-game events and the times at which they occured. It also automates the rolling of local weather conditions as outlined in ch. 5 of the the Dungeon Master's Guide (with a few small tweaks).
+D&D Time Manager is a simple application created for Microsoft Windows to allow Dungeon Masters to keep track of in-game events and the times at which they occurred. It also automates the rolling of local weather conditions as outlined in ch. 5 of the Dungeon Master's Guide (with a few small tweaks).
 
 ## Installation
-At present D&DTM is only available  as a standalone .zip archive for Microsoft Windows. Download the [Latest Release](https://github.com/JP-Carr/DnD_Time_Manager/releases/latest), simply unzip the archive in your chosen directory and you're good to go. If you are updating from and old version of D&DTM, ensure you don't erase/overwrite your database (db.pkl) and your log file (log.txt) unless you want a fresh install.
+At present D&DTM is only available as a standalone .zip archive for Microsoft Windows. Download the [Latest Release](https://github.com/JP-Carr/DnD_Time_Manager/releases/latest), simply unzip the archive in your chosen directory and you're good to go. If you are updating from and old version of D&DTM, ensure you do not erase/overwrite your database (db.pkl) and your log file (log.txt) unless you want a fresh install.
 
 ## Usage
 To start the program, run "DnD_Time_Manager.exe". This will present you with the app's GUI:
-![GUI_v0.5.0](https://github.com/JP-Carr/DnD_Time_Manager/blob/media/Images/GUI/v0.5.0/GUI_0.5.0_Default.JPG)
+![GUI_v0.5.0](https://github.com/JP-Carr/DnD_Time_Manager/blob/media/Images/GUI/v0.7.0/GUI_0.7.0_Default.JPG)
 #### Layout
 * Row 1 - In-game time: Time(hh:mm), Day, Tenday, Month, Year
 * Row 2 - Temperature and precipitation level
@@ -19,6 +19,17 @@ The "Log" function allows for notes to be recorded from the GUI, the log is stor
 
 ### Campaigns
 Each campaign is handled separately and can be edited and switched between at will. 
+
+## Updating to v0.7.0
+Campaign databases created in older version are incompatible with v0.7.0.
+For each campaign:
+1. Backup the log file 
+2. Note down the raw time value from "Tools" → "Get raw time" (if running v0.6.0)
+3. Update to v0.7.0
+4. Create a new campaign to replace the old one
+5. Enter the raw time to bring the campaign time up to date
+6. Access the campaign directory through: File → Open save directory... → [campaign name]
+7. Place the backed up log file in the campaign directory, ensuring the name of the file matches that of the directory
 
 ## Updating to v0.5.0
 Due to the changes to campaigns, updating to v0.5.0 while keeping saved data requires further steps to work correctly.
