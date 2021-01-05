@@ -195,6 +195,7 @@ while True:
 # Menu Events -----------------------------------------------------------------------
     
     elif event.endswith("::new_campaign"):
+        old_campaign=campaign
         campaign=popup.create_campaign(first=False, theme=pref["theme"])
         
         if campaign!=None:
@@ -219,7 +220,8 @@ while True:
             update_menu()
             pickler("pref.pkl", pref)
 
-
+        else:
+            campaign=old_campaign
 
 
     elif event.endswith("::open_campaign"):
