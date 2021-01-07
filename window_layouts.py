@@ -180,6 +180,27 @@ def rename_window(old_name, theme=None):
                     alert_box(text="Campaign \"{}\" already exists".format(name))
                     pass
                 
+                
+def set_reminder(theme=None): #UNDER CONSTRUCTON
+    sg.theme(theme)
+
+    layout=[
+           # [sg.Text("test")],
+            #[sg.HorizontalSeparator(color="gray")],
+            [sg.Text("Name"), sg.InputText("", size=(25,1), key="campaign_name")],
+            [sg.Text("Time until..."), sg.InputText("0", size=(5,1), key="hour_input", tooltip="Hour"), sg.InputText("0", size=(5,1), key="day_input", tooltip="Day")]
+            [sg.Button("Confirm"), sg.Button("Cancel")],
+     
+            ]
+    
+    window=sg.Window("Preferences", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False)
+  
+    while True:
+        event, values = window.read()
+        if event == sg.WIN_CLOSED:
+            break
+    window.close()
+                
 def test_window(theme=None):
     sg.theme(theme)
   #  c1=[sg.Button("Confirm"), sg.Button("Cancel")]
@@ -201,4 +222,4 @@ def test_window(theme=None):
     
 if __name__=="__main__":  
                     
-    test_window()
+    set_reminder()
