@@ -1,6 +1,7 @@
 from datetime import datetime
 
 def error(message, sound=True):
+    print(message)
     error_time=datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     if sound==True:
         print("\a")
