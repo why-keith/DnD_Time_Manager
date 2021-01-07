@@ -20,6 +20,8 @@ class db:
               "temperature": choice(conditions.temp)
               } 
         """
+        self.version="v0.8.0"
+        
         self.day_raw=0
         self.day=1
         self.hour=0
