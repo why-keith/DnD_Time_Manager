@@ -26,7 +26,8 @@ class db:
         self.day=1
         self.hour=0
         self.tenday=1
-        self.month=[1,conditions.months[1]]
+        self.month_raw=0
+        self.month=[self.month_raw+1,conditions.months[self.month_raw]]
         self.year=1491
         self.precipitation= choice(conditions.precipitation)
         self.wind_dir=choice(conditions.wind_dir)
@@ -67,8 +68,8 @@ class db:
         
         self.day=self.day_raw%30+1
         self.tenday=int((self.day_raw%30)/10)+1
-        m=int((self.day_raw%360)/30)+1
-        self.month=[m,conditions.months[m]]
+        self.month_raw=int((self.day_raw%360)/30)
+        self.month=[self.month_raw+1,conditions.months[self.month_raw]]
         self.year=int(self.day_raw/360)+1491
         
         
