@@ -4,7 +4,7 @@ from os.path import abspath, exists
 from time import sleep
 from error import error
 import window_layouts as popup
-from database_class import pickler, unpickle
+from database_class import pickler, unpickle, time_comparison
 from database_class import db as db_class
 from default_pref import default_pref  
 from tkinter import Tk
@@ -63,6 +63,7 @@ def update_db(db):
         The new up-to-date database.
 
     """
+    
     try:
         db_version=db.version
     except AttributeError:
@@ -80,6 +81,15 @@ def update_db(db):
                 setattr(new_db,i, getattr(db,i)) 
             except Exception as e:
                 error(e)
+                
+        if "month_raw" not in attributes:  #fixes introduction of month_raw
+            try:
+                new_db.month_raw=db.month[0]-1
+                new_db.change_day(1)  #forces update
+                new_db.change_day(-1)
+            except Exception as e:
+                error(e)
+                
         new_db.version=VERSION
         pickler(camp_dir+"/"+campaign+".pkl", new_db)
         return new_db        
@@ -103,7 +113,7 @@ def update_menu():
     recent_camps=pref["last campaign"][0:3]
     menu_dict={
         "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Open save directory...::save_directory", "Preferences::preferences"],
-        "Tools":["Get raw time::raw_time_out",],# "Set reminder::set_reminder", "View reminders::view_reminders"],
+        "Tools":["Get raw time::raw_time_out", "Set reminder::set_reminder", "View reminders::view_reminders"],
         "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
       }
     try:
@@ -161,6 +171,9 @@ camp_dir="campaigns/"+campaign
 db=unpickle(camp_dir+"/"+campaign+".pkl")   
 db=update_db(db)
 
+
+db.reminders=[]
+
 # Window design----------------------------------------------------------------
 
 sg.theme(pref["theme"])
@@ -189,9 +202,9 @@ main_layout=[
         ]
 
 updatable=["hour_display", "day_display", "tenday_display", "month_display", "year_display"]+["temp_display", "precip_display"]+["WS_display", "WD_display"]
-
+print("///////////////////////////////////")
 window=sg.Window("D&D Time Manager - "+campaign, main_layout, finalize=True, icon="dnd_logo.ico", return_keyboard_events=True)
-
+print("///////////////////////////////////")
 
 # Event loop-------------------------------------------------------------------
 
@@ -260,11 +273,23 @@ while True:
                 window[updatable[i]].Update(update_values[i])
         window["hour_input"].Update("0")
         window["day_input"].Update("0")
-    
-    
-    
+        
+        to_remove=[]
+        for i in db.reminders:
+            
+            print(i[0])
+            if time_comparison(db.time_data(),i[1]):
+                to_remove.append(i)
+                popup.alert_box(text=i[0], window_name="Reminder", theme=pref["theme"])
+        for i in to_remove:
+            print("removing "+i[0])
+            db.reminders.remove(i)
+        print(db.reminders)
+        
+        
 # Menu Events -----------------------------------------------------------------
     
+    # File --------------------------------------------------------------------
     elif event.endswith("::new_campaign"):
         old_campaign=campaign
         campaign=popup.create_campaign(first=False, theme=pref["theme"])
@@ -425,13 +450,26 @@ while True:
             
             db.RAW=raw_weather
             pickler(camp_dir+"/"+campaign+".pkl", db)
+            
+    # Tools--------------------------------------------------------------------
         
     elif event.endswith("::raw_time_out"):
         print(db.day_raw,db.hour)
         popup.alert_box(text="                   {} hours, {} days\n(This value can be accessed from the error log)".format(db.hour,db.day_raw), window_name="Raw Time", sound=False, theme=pref["theme"])
         error("Raw time request - {} hours, {} days".format(db.hour,db.day_raw), sound=False)
 
-    
+    elif event.endswith("::set_reminder"):
+        time_data=(window["hour_display"].get(), window["day_display"].get(), window["month_display"].get(), window["year_display"].get() )
+        remind_data=popup.set_reminder(time_data, theme=pref["theme"])
+        if remind_data !=False:
+            db.reminders.append(remind_data)
+            pickler(camp_dir+"/"+campaign+".pkl", db)
+            print(db.reminders)
+            
+    elif event.endswith("::view_reminders"):
+        popup.view_reminders(db, theme=pref["theme"])
+    # Help---------------------------------------------------------------------    
+
     elif event.endswith("::about"):
         about_text="D&D Time Manager\n    Version: {}".format(VERSION)
         popup.alert_box(text=about_text, window_name="About", button_text="Close", sound=False, theme=pref["theme"])
@@ -456,11 +494,12 @@ while True:
         else:
             startfile("https://github.com/JP-Carr/DnD_Time_Manager")  
      
-        
+    # Recent campaigns---------------------------------------------------------    
+     
     elif event in recent_camps:
         print(event)
         if event!=campaign:
-            print(0)
+           # print(0)
             
             try:
                 for file in listdir("campaigns/"+event):
