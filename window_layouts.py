@@ -4,6 +4,7 @@ from os import listdir, mkdir
 from database_class import db, pickler
 from sys import exit
 import custom_themes
+import condition_lists
 
 QT_ENTER_KEY1 =  'special 16777220'
 QT_ENTER_KEY2 =  'special 16777221'
@@ -115,7 +116,7 @@ def pref_window(pref, theme=None, using_RAW=False):
     layout=[
             [sg.Text("Appearance")],
             [sg.HorizontalSeparator()],
-            [sg.Text("Theme (requires restart)"), sg.Combo(themes, key="themes", size=(theme_len+2, 1), default_value=theme)],
+            [sg.Text("Theme (requires restart)"), sg.Combo(themes, key="themes", size=(theme_len+2, 1), default_value=theme, readonly=True)],
             [sg.Text("RAW Weather"),sg.Checkbox("", default=using_RAW, key="RAW_weather")],
             [sg.Button("Save"), sg.Button("Cancel")],
             ]
@@ -181,25 +182,81 @@ def rename_window(old_name, theme=None):
                     pass
                 
                 
-def set_reminder(theme=None): #UNDER CONSTRUCTON
+def set_reminder(time_data, theme=None): 
     sg.theme(theme)
 
+    hour, day, month, year=time_data
+
     layout=[
-           # [sg.Text("test")],
-            #[sg.HorizontalSeparator(color="gray")],
-            [sg.Text("Name"), sg.InputText("", size=(25,1), key="campaign_name")],
-            [sg.Text("Time until..."), sg.InputText("0", size=(5,1), key="hour_input", tooltip="Hour"), sg.InputText("0", size=(5,1), key="day_input", tooltip="Day")]
+            [sg.Text("Text: "), sg.InputText("", size=(47,1), key="reminder_text")],
+            [sg.HorizontalSeparator(color="gray")],
+            [sg.Text("Alert Time")],
+            [sg.Combo([str(i)+":00" for i in range(0,24)], default_value=hour,size=(6,1), readonly=True,key="hour", tooltip="Time - 24 hour"),   sg.Combo(list(range(1,31)), default_value=day, size=(3,1), readonly=True,key="day", tooltip="Day of the month"), sg.Combo(["{}. {}".format(condition_lists.months.index(i)+1,i) for i in condition_lists.months], default_value=month, size=(30,1), readonly=True,key="month", tooltip="Month"),   sg.InputText(year, size=(5,1), readonly=False,key="year", tooltip="Year - DR")],
+            [sg.HorizontalSeparator(color="gray")],
             [sg.Button("Confirm"), sg.Button("Cancel")],
-     
             ]
     
-    window=sg.Window("Preferences", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False)
+    window=sg.Window("Set Reminder", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True, disable_minimize=False, return_keyboard_events=True)
+
+    while True:
+        event, values = window.read()
+        focused_enter=None
+        if event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
+            active_element=window.FindElementWithFocus()          #Dectects if the enter key has been pressed and checks which element is active
+            print(active_element)
+            
+            if active_element==window["reminder_text"]:
+                focused_enter="reminder_text"
+        
+        if event == sg.WIN_CLOSED or event=="Cancel":
+            window.close()
+            return False
+        
+        elif event=="Confirm" or focused_enter=="reminder_text":
+            text=window["reminder_text"].get()
+            if text=="":
+                print("\a")
+                continue
+            hour=int(window["hour"].get().split(":")[0])
+            day=int(window["day"].get())
+            month=int(window["month"].get().split(".")[0])
+            year=int(window["year"].get())
+            window.close()
+            return (text, (hour,day,month,year))
+             
+
+def view_reminders(db, theme=None):
+    sg.theme(theme)
+    #ADD CASE FOR NO REMINDERS WITH OPTION TO RECREATE ONE
+    reminder_list=[i[0] for i in db.reminders]
+    list_box_width=20
+    list_box_height=7
+    for i in reminder_list:
+        if len(i)>list_box_width:
+            list_box_width=len(i)
+
+    
+   
+    
+    
+   # print(reminder_list)
+    layout=[
+            [sg.Text("test")],
+            [sg.HorizontalSeparator(color="gray")],
+            [sg.Listbox(reminder_list, select_mode="LISTBOX_SELECT_MODE_SINGLE", key="list_box", size=(list_box_width,list_box_height))]  , 
+            [sg.Button("Delete")]
+            ]
+    
+    window=sg.Window("Reminders", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False)
   
     while True:
         event, values = window.read()
         if event == sg.WIN_CLOSED:
             break
-    window.close()
+        if event=="Delete":
+            print(window["list_box"].GetIndexes())
+    window.close()         
+    
                 
 def test_window(theme=None):
     sg.theme(theme)
@@ -209,7 +266,8 @@ def test_window(theme=None):
             [sg.HorizontalSeparator(color="gray")],
             [sg.Text("New name"), sg.InputText("", size=(25,1), key="campaign_name")],
             #[sg.Button("Confirm"), sg.Button("Cancel")],
-     
+            [sg.Listbox(["aaaaa","bbbbb","ccccc","ddddd","eeeee","fffff","ggggg","hhhhh"], size=(15,6), key="list")],
+            [sg.Button("x")]
             ]
     
     window=sg.Window("Preferences", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False)
@@ -218,8 +276,9 @@ def test_window(theme=None):
         event, values = window.read()
         if event == sg.WIN_CLOSED:
             break
+        elif event=="x":
+           print( window["tab"].read())
     window.close()
     
 if __name__=="__main__":  
-                    
-    set_reminder()
+    test_window()
