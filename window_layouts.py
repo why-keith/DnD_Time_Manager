@@ -225,37 +225,52 @@ def set_reminder(time_data, theme=None):
             return (text, (hour,day,month,year))
              
 
-def view_reminders(db, theme=None):
+def view_reminders(db, time_data, theme=None):
     sg.theme(theme)
-    #ADD CASE FOR NO REMINDERS WITH OPTION TO RECREATE ONE
-    reminder_list=[i[0] for i in db.reminders]
-    list_box_width=20
-    list_box_height=7
-    for i in reminder_list:
-        if len(i)>list_box_width:
-            list_box_width=len(i)
-
     
-   
+    if db.reminders==[]:
+        if choice_box("No reminders found. Would you like to create one?", window_name="Alert", theme=theme)==True:
+            return "set_reminder"
+        else:
+            return
+            
+    else:
     
+        reminder_list=[" "+i[0]+" | {}:00  {}/{}/{}".format(i[1][0],i[1][1],i[1][2],i[1][3]) for i in db.reminders]
+        list_box_width=30
+        list_box_height=7
+        for i in reminder_list:
+            if len(i)>list_box_width:
+                list_box_width=len(i)
     
-   # print(reminder_list)
-    layout=[
-            [sg.Text("test")],
-            [sg.HorizontalSeparator(color="gray")],
-            [sg.Listbox(reminder_list, select_mode="LISTBOX_SELECT_MODE_SINGLE", key="list_box", size=(list_box_width,list_box_height))]  , 
-            [sg.Button("Delete")]
-            ]
-    
-    window=sg.Window("Reminders", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False)
-  
-    while True:
-        event, values = window.read()
-        if event == sg.WIN_CLOSED:
-            break
-        if event=="Delete":
-            print(window["list_box"].GetIndexes())
-    window.close()         
+        
+       
+        
+        
+       # print(reminder_list)
+        layout=[
+                [sg.Text("test")],
+                [sg.HorizontalSeparator(color="gray")],
+                [sg.Listbox(reminder_list, select_mode="LISTBOX_SELECT_MODE_SINGLE", key="list_box", size=(list_box_width,list_box_height))]  , 
+                [sg.Button("Delete")]
+                ]
+        
+        window=sg.Window("Reminders", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False)
+      
+        while True:
+            event, values = window.read()
+            if event == sg.WIN_CLOSED:
+                break
+            if event=="Delete":
+                index=window["list_box"].GetIndexes()[0]
+                db.reminders.pop(index)
+                print(db.reminders)
+                reminder_list=[" "+i[0]+" | {}:00  {}/{}/{}".format(i[1][0],i[1][1],i[1][2],i[1][3]) for i in db.reminders]
+                window["list_box"].Update(values=reminder_list)
+                
+                if len(db.reminders)==0:
+                    window["Delete"].update(disabled=True)
+        window.close()         
     
                 
 def test_window(theme=None):
