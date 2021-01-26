@@ -467,7 +467,14 @@ while True:
             print(db.reminders)
             
     elif event.endswith("::view_reminders"):
-        popup.view_reminders(db, theme=pref["theme"])
+        time_data=(window["hour_display"].get(), window["day_display"].get(), window["month_display"].get(), window["year_display"].get() )
+        if popup.view_reminders(db, time_data, theme=pref["theme"])=="set_reminder":
+            remind_data=popup.set_reminder(time_data, theme=pref["theme"])
+            if remind_data !=False:
+                db.reminders.append(remind_data)
+                print(db.reminders)
+        pickler(camp_dir+"/"+campaign+".pkl", db)
+    
     # Help---------------------------------------------------------------------    
 
     elif event.endswith("::about"):
