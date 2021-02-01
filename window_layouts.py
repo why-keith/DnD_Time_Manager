@@ -37,7 +37,7 @@ def choice_box(text, window_name="", theme=None):
             [sg.Text(text)],
             [sg.Button("Yes"), sg.Button("No")]
             ]
-    window=sg.Window(window_name, layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=True, )
+    window=sg.Window(window_name, layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=True, return_keyboard_events=True, )
     print("\a")
     
     while True:
@@ -48,7 +48,7 @@ def choice_box(text, window_name="", theme=None):
         elif event=="No":
             window.close()
             return False
-        elif event=="Yes":
+        elif event=="Yes" or event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
             window.close()
             return True
         
