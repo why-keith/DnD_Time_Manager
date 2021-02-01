@@ -249,27 +249,37 @@ def view_reminders(db, time_data, theme=None):
         
        # print(reminder_list)
         layout=[
-                [sg.Text("test")],
+                [sg.Text("Reminders")],
                 [sg.HorizontalSeparator(color="gray")],
-                [sg.Listbox(reminder_list, select_mode="LISTBOX_SELECT_MODE_SINGLE", key="list_box", size=(list_box_width,list_box_height))]  , 
-                [sg.Button("Delete")]
+                [sg.Listbox(reminder_list, select_mode="LISTBOX_SELECT_MODE_SINGLE", key="list_box", size=(list_box_width,list_box_height), enable_events=True)]  , 
+                [sg.Button("Delete", disabled=True)]
                 ]
         
-        window=sg.Window("Reminders", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False)
+        window=sg.Window("View Reminders", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False)
       
         while True:
             event, values = window.read()
             if event == sg.WIN_CLOSED:
                 break
+            
+            if event=="list_box" and len(db.reminders)!=0:
+                window["Delete"].update(disabled=False)
+            
             if event=="Delete":
-                index=window["list_box"].GetIndexes()[0]
-                db.reminders.pop(index)
-                print(db.reminders)
-                reminder_list=[" "+i[0]+" | {}:00  {}/{}/{}".format(i[1][0],i[1][1],i[1][2],i[1][3]) for i in db.reminders]
-                window["list_box"].Update(values=reminder_list)
-                
-                if len(db.reminders)==0:
-                    window["Delete"].update(disabled=True)
+                try:
+                    index=window["list_box"].GetIndexes()[0]
+                except IndexError:
+                    continue
+                else:
+                    db.reminders.pop(index)
+                    print(db.reminders)
+                    reminder_list=[" "+i[0]+" | {}:00  {}/{}/{}".format(i[1][0],i[1][1],i[1][2],i[1][3]) for i in db.reminders]
+                    window["list_box"].Update(values=reminder_list)
+                    
+                    if len(db.reminders)==0:
+                        window["Delete"].update(disabled=True)
+            else:
+                print(event)
         window.close()         
     
                 
