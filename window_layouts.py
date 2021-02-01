@@ -5,6 +5,7 @@ from database_class import db, pickler
 from sys import exit
 import custom_themes
 import condition_lists
+from database_class import time_increment
 
 QT_ENTER_KEY1 =  'special 16777220'
 QT_ENTER_KEY2 =  'special 16777221'
@@ -191,8 +192,9 @@ def set_reminder(time_data, theme=None):
             [sg.Text("Text: "), sg.InputText("", size=(47,1), key="reminder_text")],
             [sg.HorizontalSeparator(color="gray")],
             [sg.Text("Alert Time")],
-            [sg.Combo([str(i)+":00" for i in range(0,24)], default_value=hour,size=(6,1), readonly=True,key="hour", tooltip="Time - 24 hour"),   sg.Combo(list(range(1,31)), default_value=day, size=(3,1), readonly=True,key="day", tooltip="Day of the month"), sg.Combo(["{}. {}".format(condition_lists.months.index(i)+1,i) for i in condition_lists.months], default_value=month, size=(30,1), readonly=True,key="month", tooltip="Month"),   sg.InputText(year, size=(5,1), readonly=False,key="year", tooltip="Year - DR")],
+            [sg.Radio("", group_id=0, default=True, enable_events=True, key="select_date"), sg.Combo([str(i)+":00" for i in range(0,24)], default_value=hour,size=(6,1), readonly=True,key="hour", tooltip="Time - 24 hour"),   sg.Combo(list(range(1,31)), default_value=day, size=(3,1), readonly=True,key="day", tooltip="Day of the month"), sg.Combo(["{}. {}".format(condition_lists.months.index(i)+1,i) for i in condition_lists.months], default_value=month, size=(30,1), readonly=True,key="month", tooltip="Month"),   sg.InputText(year, size=(5,1), readonly=False,key="year", tooltip="Year - DR",  use_readonly_for_disable=False)],
             [sg.HorizontalSeparator(color="gray")],
+            [sg.Radio("", group_id=0, default=False, enable_events=True, key="select_time")],
             [sg.Button("Confirm"), sg.Button("Cancel")],
             ]
     
@@ -223,7 +225,15 @@ def set_reminder(time_data, theme=None):
             year=int(window["year"].get())
             window.close()
             return (text, (hour,day,month,year))
-             
+        elif event=="select_time":
+            for i in ("hour","day","month","year"):
+                window[i].update(disabled=True)
+        elif event=="select_date":
+            for i in ("hour","day","month","year"):
+                window[i].update(disabled=False)
+                
+        else:
+                print(event)
 
 def view_reminders(db, time_data, theme=None):
     sg.theme(theme)
