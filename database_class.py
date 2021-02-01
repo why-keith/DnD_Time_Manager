@@ -1,6 +1,7 @@
 import pickle
 from random import choice, randint
 import condition_lists as conditions
+from error import error
 ########################################################
 
 class db:
@@ -20,27 +21,23 @@ class db:
               "temperature": choice(conditions.temp)
               } 
         """
+        self.version="v0.8.0"
+        
         self.day_raw=0
         self.day=1
         self.hour=0
         self.tenday=1
-        self.month=[1,conditions.months[1]]
+        self.month_raw=0
+        self.month=[self.month_raw+1,conditions.months[self.month_raw]]
         self.year=1491
         self.precipitation= choice(conditions.precipitation)
         self.wind_dir=choice(conditions.wind_dir)
         self.windspeed=choice(conditions.wind_speed)
         self.temperature= choice(conditions.temp)
         self.RAW=False
-  #      pickle.dump( self.day_data, open("db.pkl", "wb"))
-    """
-    def save():
-        try:
-            pickle.dump( db, open("db.pkl", "wb"))
-        except:
-            print("UNABLE TO SAVE DATABASE")
-        else:
-            print("Database saved")
-    """    
+        
+        self.reminders=[]
+  
     
     def show_all(self):
         for i in db:
@@ -65,9 +62,10 @@ class db:
         
         self.day=self.day_raw%30+1
         self.tenday=int((self.day_raw%30)/10)+1
-        m=int((self.day_raw%360)/30)+1
-        self.month=[m,conditions.months[m]]
+        self.month_raw=int((self.day_raw%360)/30)
+        self.month=[self.month_raw+1,conditions.months[self.month_raw]]
         self.year=int(self.day_raw/360)+1491
+                
         
         
     def change_day(self, x):
@@ -96,6 +94,10 @@ class db:
         except TypeError as e:
             print("INVALID TIME INCREMENT")
 
+    def time_data(self):
+        return (self.hour,self.day,self.month[0],self.year)
+    
+    
 
 def pickler(path,obj):
     outfile = open(path,'wb')
@@ -113,16 +115,36 @@ def unpickle(path):
     except FileNotFoundError:
         return None
 
-     
-###########################################################
-"""
-try:
-    db=pickle.load(open( "db.pkl", "rb" ) )
-except:
-    init()    
-    db=pickle.load(open( "db.pkl", "rb" ) )
+def time_comparison(time0, time1):
+    """
+    Compares in-game time   
 
-#while 1:    
-#    x=input("Enter command:\n>>")
-#    commands(x)
-"""
+    Parameters
+    ----------
+    time0 : tuple
+        time data of the form (hour,day,month,year).
+    time1 : tuple
+        time data of the form (hour,day,month,year).
+
+    Returns
+    -------
+    bool
+        True if time1<=time0.
+
+    """
+    if len(time0)!=len(time1):
+        error("time_comparison length error")
+        return
+    
+    for i in range(len(time0)):
+        print(time0[-i-1],time1[-i-1])
+        if time0[-i-1]>time1[-i-1]:
+            print(True)
+            return True
+        elif time0[-i-1]<time1[-i-1]:
+            print(False)
+            return False
+    print("equal")
+    return True
+    
+         
