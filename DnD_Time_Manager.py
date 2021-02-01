@@ -172,7 +172,7 @@ db=unpickle(camp_dir+"/"+campaign+".pkl")
 db=update_db(db)
 
 
-db.reminders=[]
+#db.reminders=[]
 
 # Window design----------------------------------------------------------------
 
