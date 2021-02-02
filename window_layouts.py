@@ -192,13 +192,16 @@ def set_reminder(time_data, theme=None):
             [sg.Text("Text: "), sg.InputText("", size=(47,1), key="reminder_text")],
             [sg.HorizontalSeparator(color="gray")],
             [sg.Text("Alert Time")],
-            [sg.Radio("", group_id=0, default=True, enable_events=True, key="select_date"), sg.Combo([str(i)+":00" for i in range(0,24)], default_value=hour,size=(6,1), readonly=True,key="hour", tooltip="Time - 24 hour"),   sg.Combo(list(range(1,31)), default_value=day, size=(3,1), readonly=True,key="day", tooltip="Day of the month"), sg.Combo(["{}. {}".format(condition_lists.months.index(i)+1,i) for i in condition_lists.months], default_value=month, size=(30,1), readonly=True,key="month", tooltip="Month"),   sg.InputText(year, size=(5,1), readonly=False,key="year", tooltip="Year - DR",  use_readonly_for_disable=False)],
+            [sg.Radio("", group_id=0, default=True, enable_events=True, key="select_date"), sg.VerticalSeparator(color="gray"),  sg.Combo([str(i)+":00" for i in range(0,24)], default_value=hour,size=(6,1), readonly=True,key="hour", tooltip="Time - 24 hour"),   sg.Combo(list(range(1,31)), default_value=day, size=(3,1), readonly=True,key="day", tooltip="Day of the month"), sg.Combo(["{}. {}".format(condition_lists.months.index(i)+1,i) for i in condition_lists.months], default_value=month, size=(30,1), readonly=True,key="month", tooltip="Month"),   sg.InputText(year, size=(5,1), readonly=False,key="year", tooltip="Year - DR",  use_readonly_for_disable=False)],
             [sg.HorizontalSeparator(color="gray")],
-            [sg.Radio("", group_id=0, default=False, enable_events=True, key="select_time")],
+            [sg.Radio("", group_id=0, default=False, enable_events=True, key="select_time"), sg.VerticalSeparator(color="gray"), sg.Text(" Hour:"), sg.InputText("",size=(5,1), key="hour_input", tooltip="Time - 24 hour"),  sg.Text(" Day:"), sg.InputText("", size=(5,1),key="day_input", tooltip="Day of the month"), sg.Text(" Month:"), sg.InputText("", size=(5,1), key="month_input", tooltip="Month"),  sg.Text(" Year:"), sg.InputText("", size=(5,1), key="year_input", tooltip="Year - DR"), sg.Text("")],
             [sg.Button("Confirm"), sg.Button("Cancel")],
             ]
     
     window=sg.Window("Set Reminder", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True, disable_minimize=False, return_keyboard_events=True)
+
+    for j in ("hour_input","day_input","month_input","year_input"):
+        window[j].update(disabled=True)
 
     while True:
         event, values = window.read()
@@ -228,9 +231,13 @@ def set_reminder(time_data, theme=None):
         elif event=="select_time":
             for i in ("hour","day","month","year"):
                 window[i].update(disabled=True)
+            for j in ("hour_input","day_input","month_input","year_input"):
+                window[j].update(disabled=False)
         elif event=="select_date":
             for i in ("hour","day","month","year"):
                 window[i].update(disabled=False)
+            for j in ("hour_input","day_input","month_input","year_input"):
+                window[j].update(disabled=True)
                 
         else:
                 print(event)
