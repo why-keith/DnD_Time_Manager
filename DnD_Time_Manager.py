@@ -13,7 +13,7 @@ from send2trash import send2trash
 from urllib.request import urlopen
 
 
-VERSION="v0.8.0"
+VERSION="v0.9.0"
 
 
 # Functions--------------------------------------------------------------------
@@ -460,10 +460,11 @@ while True:
 
     elif event.endswith("::set_reminder"):
         time_data=(window["hour_display"].get(), window["day_display"].get(), window["month_display"].get(), window["year_display"].get() )
-        remind_data=popup.set_reminder(time_data, theme=pref["theme"])
+        remind_data,pref=popup.set_reminder(time_data, pref, theme=pref["theme"])
         if remind_data !=False:
             db.reminders.append(remind_data)
             pickler(camp_dir+"/"+campaign+".pkl", db)
+            pickler("pref.pkl", pref)
             print(db.reminders)
             
     elif event.endswith("::view_reminders"):
