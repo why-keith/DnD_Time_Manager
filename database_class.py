@@ -140,21 +140,18 @@ def time_comparison(time0, time1):
     for i in range(len(time0)):
         print(time0[-i-1],time1[-i-1])
         if time0[-i-1]>time1[-i-1]:
-            print(True)
+          #  print(True)
             return True
         elif time0[-i-1]<time1[-i-1]:
-            print(False)
+         #   print(False)
             return False
     print("equal")
     return True
 
 def time_increment(start_time, increment):
- #   hour,day,month,year=start_time
-#    delta_hour, delta_day, delta_month, delta_year=increment
 
     new_time=array(start_time)+array(increment)
     limits=[24, 30, 12, 1e99]
-  #  print(range(len(new_time)-1))
     new_time[0]+=1
     for i in range(len(new_time)-1):
         limit=limits[i]
@@ -164,7 +161,3 @@ def time_increment(start_time, increment):
             new_time[i+1]+=int(new_time[i]/limit)+1
     new_time[0]-=1   
     return new_time       
-            
-x=(23,30,12,2000)    
-i=(1,0,0,0)
-print(time_increment(x,i))
