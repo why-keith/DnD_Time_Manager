@@ -1,7 +1,7 @@
 import PySimpleGUI as sg
-from os import startfile, listdir, rename, mkdir, rmdir
+from os import startfile, listdir, rename, mkdir, rmdir, getenv
 from os.path import abspath, exists
-from time import sleep
+#from time import sleep
 from error import error
 import window_layouts as popup
 from database_class import pickler, unpickle, time_comparison
@@ -11,14 +11,15 @@ from tkinter import Tk
 from tkinter.filedialog import askdirectory
 from send2trash import send2trash
 from urllib.request import urlopen
-
+from shutil import copyfile, copytree
+from sys import exit
 
 VERSION="v0.9.0"
 
 
 # Functions--------------------------------------------------------------------
 
-def version_compare(ver):
+def version_compare(ver, current_ver=VERSION):
     """
     Checks with a given version against that of the program
 
@@ -34,16 +35,18 @@ def version_compare(ver):
 
     """
     int_ver=[int(ver[1:].split(".")[i]) for i in range(len(ver[1:].split(".")))]
-    new_int_ver=[int(VERSION[1:].split(".")[i]) for i in range(len(VERSION[1:].split(".")))]
-    
+    new_int_ver=[int(current_ver[1:].split(".")[i]) for i in range(len(current_ver[1:].split(".")))]
+    print(int_ver,new_int_ver)
     up_to_date=True
     for i in range(len(int_ver)):
+        print(int_ver[i],new_int_ver[i])
         if int_ver[i]<new_int_ver[i]:
+            
             up_to_date=False
             break
         elif int_ver[i]>new_int_ver[i]:
             break
-
+    #print(up_to_date)
     return up_to_date
 
 
@@ -123,28 +126,50 @@ def update_menu():
     
     return menu_dict
 
+def move_files(target_path):
+    """
+    try:
+        copytree("campaigns",abspath(target_path+"/campaigns"))
+    except Exception as e:
+        error(e)
+    try:
+        copyfile("pref.pkl", abspath(target_path+"/pref.pkl"))
+    except Exception as e:
+        error(e)
+    """
+    return
 
 # Preferences & campaign loading-----------------------------------------------
 
-if "pref.pkl" in listdir():
+user_area=abspath(getenv('LOCALAPPDATA')+"/JP-Carr/DnD_Time_Manager")
+if version_compare(VERSION, current_ver="v0.9.1")==False:    #CHANGE BEFORE RELEASE
+    if popup.alert_box(text="Moving campaign and preference files to user area\nFiles will be located at:\n"+user_area, window_name="Moving files")==True:
+        print("moving files")
+        move_files(user_area)
+    else:
+        exit()
+
+if "pref.pkl" in listdir():      #Loads pref file or creates new one
     pref=unpickle("pref.pkl")    
-    for key in default_pref:
-       # print(key)
-        if key not in pref:
-            pref[key]=default_pref[key]
-    
 else:
     pref=default_pref
     pref["version"]=VERSION
     pickler("pref.pkl", pref)
     print("new pref file created")
+
+
+if pref["version"]!=VERSION:      # updates pref file with any new entries
+    for key in default_pref:
+            if key not in pref:
+                pref[key]=default_pref[key]
+    pref["version"]=VERSION
     
     
 if "campaigns" not in listdir():
     mkdir("campaigns")
     
 campaign=None
-if len(listdir("campaigns"))!=0: #loads most recent possible campaign
+if len(listdir("campaigns"))!=0:    #loads most recent possible campaign
     for i in pref["last campaign"]:
         if i in listdir("campaigns") and exists("campaigns/{}/{}.pkl".format(i, i)):
             campaign=i
