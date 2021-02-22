@@ -13,9 +13,11 @@ QT_ENTER_KEY2 =  'special 16777221'
 icon_path="dnd_logo.ico"
 
 def alert_box(text="TEXT HERE", window_name="ALERT", button_text="OK", sound=True, theme=None):
+    lines=text.split("\n")
+    
     sg.theme(theme)
-    layout=[
-            [sg.Text("  "+text+"  ")],
+    layout=[[sg.Text("  "+lines[i]+"  ")] for i in range(len(lines))]+[
+          #  [sg.Text("  "+text+"  ")],
             [sg.Button(button_text)]
             ]
     window=sg.Window(window_name, layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=True, return_keyboard_events=True, )
@@ -26,10 +28,10 @@ def alert_box(text="TEXT HERE", window_name="ALERT", button_text="OK", sound=Tru
         event, values = window.read()
         if event == sg.WIN_CLOSED:
             window.close()
-            return
+            return False
         elif event==button_text or event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
             window.close()
-            return
+            return True
             
 
 def choice_box(text, window_name="", theme=None):
