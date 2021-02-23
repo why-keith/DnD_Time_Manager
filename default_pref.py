@@ -3,4 +3,5 @@ default_pref={"version":"v0.0.0",
           "theme": "Default",
           "new_theme": "Default",
           "set_reminder_option": "date",
+          "show_tenday": True,
       }
