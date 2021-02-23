@@ -3,6 +3,7 @@ from random import choice, randint
 import condition_lists as conditions
 from error import error
 from numpy import array
+from os.path import abspath
 ########################################################
 
 class db:
@@ -101,6 +102,7 @@ class db:
     
 
 def pickler(path,obj):
+    path=abspath(path)
     outfile = open(path,'wb')
     pickle.dump(obj,outfile)
     outfile.close()
@@ -108,6 +110,7 @@ def pickler(path,obj):
     
 def unpickle(path):
     try:    
+        path=abspath(path)
         infile = open(path,'rb')
         obj = pickle.load(infile)
         infile.close()
