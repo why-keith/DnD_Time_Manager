@@ -117,13 +117,19 @@ def pref_window(pref, theme=None, using_RAW=False):
     
     
     layout=[
-            [sg.Text("APPEARANCE")],
+            [sg.Text("APPEARANCE (requires restart)")],
             [sg.HorizontalSeparator()],
-            [sg.Text("Theme (requires restart)"), sg.Combo(themes, key="themes", size=(theme_len+2, 1), default_value=theme, readonly=True)],
+
+      #      [sg.Text("Theme"), sg.Combo(themes, key="themes", size=(theme_len+2, 1), default_value=theme, readonly=True)],
+       #     [sg.Text("Show Tenday"), sg.Checkbox("", default=pref["show_tenday"], key="show_tenday")],
+
+            [sg.Column([[sg.Text("Theme")],[sg.Text("Show Tenday")]]), sg.Column([[sg.Combo(themes, key="themes", size=(theme_len+2, 1), default_value=theme, readonly=True)], [sg.Checkbox("", default=pref["show_tenday"], key="show_tenday")]])],
+            
             [sg.Text("")],
-            [sg.Text("APP SETTINGS")],
+            [sg.Text("APP BEHAVIOUR")],
             [sg.HorizontalSeparator()],
-            [sg.Text("RAW Weather"),sg.Checkbox("", default=using_RAW, key="RAW_weather")],
+            #[sg.Text("RAW Weather"),sg.Checkbox("", default=using_RAW, key="RAW_weather")],
+            [sg.Column([[sg.Text("RAW Weather"),sg.Checkbox("", default=using_RAW, key="RAW_weather")]])],
             [sg.Button("Save"), sg.Button("Cancel")],
             ]
     window=sg.Window("Preferences", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False)
@@ -138,12 +144,9 @@ def pref_window(pref, theme=None, using_RAW=False):
             save=True
             if window["themes"].Get() in themes:
                 pref["new_theme"]=window["themes"].Get()
-            using_RAW=window["RAW_weather"].get()
-                
-            
-            
-                
-            print(pref["theme"])
+            using_RAW=bool(window["RAW_weather"].get())
+            pref["show_tenday"]=bool(window["show_tenday"].Get())
+          #  print(pref["theme"])
             break
         
     window.close()        
@@ -230,7 +233,7 @@ def set_reminder(time_data, pref, theme=None):
         
         if event == sg.WIN_CLOSED or event=="Cancel":
             window.close()
-            return False
+            return False,pref
         
         elif event=="select_time":
             for i in ("hour","day","month","year"):
@@ -279,8 +282,8 @@ def set_reminder(time_data, pref, theme=None):
         
         
                 
-        else:
-                print(event)
+      #  else:
+       #         print(event)
 
 def view_reminders(db, time_data, theme=None):
     sg.theme(theme)
@@ -335,8 +338,8 @@ def view_reminders(db, time_data, theme=None):
                     
                     if len(db.reminders)==0:
                         window["Delete"].update(disabled=True)
-            else:
-                print(event)
+         #   else:
+          #      print(event)
         window.close()         
     
                 
