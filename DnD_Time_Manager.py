@@ -127,7 +127,6 @@ def update_menu():
     return menu_dict
 
 def move_files(target_path):
-
     try:
         copytree("campaigns",abspath(target_path+"/campaigns"))
     except Exception as e:
@@ -136,6 +135,7 @@ def move_files(target_path):
         copyfile("pref.pkl", abspath(target_path+"/pref.pkl"))
     except Exception as e:
         error(e)
+
     return
 
 # Preferences & campaign loading-----------------------------------------------
@@ -207,15 +207,16 @@ sg.theme(pref["theme"])
 QT_ENTER_KEY1 =  'special 16777220'
 QT_ENTER_KEY2 =  'special 16777221'
 focused_enter=None
+restart=False
 
 menu_dict=update_menu()
-
+#print(pref["show_tenday"])
 main_layout=[
         [sg.Menu([[i,menu_dict[i]] for i in menu_dict], visible=False, key="menu_bar")],
         
         [sg.Text("Time")],
        
-        [sg.InputText("{}:00".format(db.hour),size=(6,1), readonly=True,key="hour_display", tooltip="Time - 24 hour"),   sg.InputText(db.day, size=(3,1), readonly=True,key="day_display", tooltip="Day of the month"),   sg.InputText(db.tenday, size=(2,1), readonly=True,key="tenday_display", tooltip="Tenday"),   sg.InputText("{}. {}".format(db.month[0],db.month[1]), size=(30,1), readonly=True,key="month_display", tooltip="Month"),   sg.InputText(db.year, size=(5,1), readonly=True,key="year_display", tooltip="Year - DR")],
+        [sg.InputText("{}:00".format(db.hour),size=(6,1), readonly=True,key="hour_display", tooltip="Time - 24 hour"),   sg.InputText(db.day, size=(3,1), readonly=True,key="day_display", tooltip="Day of the month"),   sg.InputText(db.tenday, size=(2,1), readonly=True,key="tenday_display", tooltip="Tenday", visible=pref["show_tenday"]),   sg.InputText("{}. {}".format(db.month[0],db.month[1]), size=(30,1), readonly=True,key="month_display", tooltip="Month"),   sg.InputText(db.year, size=(5,1), readonly=True,key="year_display", tooltip="Year - DR")],
         
         [sg.Text("Temperature"), sg.InputText(db.temperature, size=(20,1), readonly=True,key="temp_display"), sg.Text("Precipitation"), sg.InputText(db.precipitation, size=(6,1), readonly=True,key="precip_display")],
         
@@ -356,13 +357,16 @@ while True:
         Tk().withdraw()
         try:
             path=askdirectory(initialdir=user_area+"/campaigns")#, title='Please select a directory')
+
         except Exception as e:
             print("Invalid Folder Path\n")
             print(e)
             pass
         
-        else:
-            print(path)
+      #  else:
+       #     print(path)
+        if path=="":
+            continue
             try:
                 for file in listdir(path):
                     if file.endswith(".pkl"):
@@ -484,7 +488,8 @@ while True:
             
             db.RAW=raw_weather
             pickler(camp_dir+"/"+campaign+".pkl", db)
-            
+     #       print("tenday -" +str(pref["show_tenday"]))
+
     # Tools--------------------------------------------------------------------
         
     elif event.endswith("::raw_time_out"):
