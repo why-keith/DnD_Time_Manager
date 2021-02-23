@@ -117,9 +117,12 @@ def pref_window(pref, theme=None, using_RAW=False):
     
     
     layout=[
-            [sg.Text("Appearance")],
+            [sg.Text("APPEARANCE")],
             [sg.HorizontalSeparator()],
             [sg.Text("Theme (requires restart)"), sg.Combo(themes, key="themes", size=(theme_len+2, 1), default_value=theme, readonly=True)],
+            [sg.Text("")],
+            [sg.Text("APP SETTINGS")],
+            [sg.HorizontalSeparator()],
             [sg.Text("RAW Weather"),sg.Checkbox("", default=using_RAW, key="RAW_weather")],
             [sg.Button("Save"), sg.Button("Cancel")],
             ]
