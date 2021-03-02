@@ -23,7 +23,7 @@ class db:
               "temperature": choice(conditions.temp)
               } 
         """
-        self.version="v0.8.0"
+        self.version="v0.9.0"
         
         self.day_raw=0
         self.day=1
@@ -39,6 +39,8 @@ class db:
         self.RAW=False
         
         self.reminders=[]
+        self.session_num=1
+      
   
     
     def show_all(self):
