@@ -120,13 +120,22 @@ def pref_window(pref, db, theme=None):
         if len(i)>theme_len:
             theme_len=len(i)
     
-    RAW_tooltip="Use rules as written in DMG ch. 5 (less consistant)"
-    layout=[
-            [sg.Text("APPEARANCE (requires restart)")],
+    RAW_tooltip=" Use rules as written in DMG ch. 5 (less consistant) "
+    auto_end_tooltip=" Marks the end of a session in the campaign log when the app is closed "
+    
+    layout=[[sg.Text("APPEARANCE (requires restart)")],
             [sg.HorizontalSeparator()],
 
             [sg.Column([[sg.Text("Theme")],[sg.Text("Show Tenday")]]), 
              sg.Column([[sg.Combo(themes, key="themes", size=(theme_len+2, 1), default_value=theme, readonly=True)], [sg.Checkbox("", default=pref["show_tenday"], key="show_tenday")]])
+             ],
+        
+            [sg.Text("")],
+            [sg.Text("APPLICATION SETTINGS")],
+            [sg.HorizontalSeparator()],
+
+            [sg.Column([[sg.Text("Auto-End Session", tooltip=auto_end_tooltip)],]), 
+             sg.Column([[sg.Checkbox("", default=pref["end_session_on_close"], key="auto_end", tooltip=auto_end_tooltip)], ])
              ],
             
             [sg.Text("")],
@@ -159,6 +168,7 @@ def pref_window(pref, db, theme=None):
             if window["themes"].Get() in themes:
                 pref["new_theme"]=window["themes"].Get()
             pref["show_tenday"]=bool(window["show_tenday"].Get())
+            pref["end_session_on_close"]=bool(window["auto_end"].Get())
             
             db.RAW=bool(window["RAW_weather"].get())
             db.session_num=int(window["session_num"].get())
