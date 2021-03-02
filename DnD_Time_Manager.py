@@ -14,7 +14,7 @@ from urllib.request import urlopen
 from shutil import copyfile, copytree
 from sys import exit
 
-VERSION="v0.9.0"
+VERSION="v0.9.0"    
 DEV_MODE=True
 
 # Functions--------------------------------------------------------------------
@@ -116,7 +116,7 @@ def update_menu():
     recent_camps=pref["last campaign"][0:3]
     menu_dict={
         "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Open save directory...::save_directory", "Preferences::preferences"],
-        "Tools":["Get raw time::raw_time_out", "Set reminder::set_reminder", "View reminders::view_reminders"],
+        "Tools":["Get raw time::raw_time_out", "Set session no.::set_session_no", "Set reminder::set_reminder", "View reminders::view_reminders"],
         "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
       }
     try:
@@ -318,6 +318,14 @@ while True:
             db.reminders.remove(i)
         print(db.reminders)
         
+    elif event == "End Session":
+        log=open("{}/{}.txt".format(camp_dir,campaign), "a")
+        log.write("Session {} --------------------------------------------------------".format(db.session_num))
+        log.close()
+        db.session_num+=1
+        pickler(camp_dir+"/"+campaign+".pkl", db)
+        
+        
         
 # Menu Events -----------------------------------------------------------------
     
@@ -482,12 +490,12 @@ while True:
     
     
     elif event.endswith("::preferences"):
-        new_pref, save_pref, raw_weather = popup.pref_window(pref, theme=pref["theme"], using_RAW=db.RAW)
-        if save_pref==True:
+        new_pref, save, db = popup.pref_window(pref, db, theme=pref["theme"])
+        if save==True:
             pref=new_pref
             pickler(user_area+"/pref.pkl", pref)
             
-            db.RAW=raw_weather
+       #     db.RAW=raw_weather
             pickler(camp_dir+"/"+campaign+".pkl", db)
      #       print("tenday -" +str(pref["show_tenday"]))
 
@@ -497,6 +505,9 @@ while True:
         print(db.day_raw,db.hour)
         popup.alert_box(text="{} hours, {} days\n(This value can be accessed from the error log)".format(db.hour,db.day_raw), window_name="Raw Time", sound=False, theme=pref["theme"])
         error("Raw time request - {} hours, {} days".format(db.hour,db.day_raw), sound=False)
+        
+    #elif event.endswith("::set_session_no"):
+     #   _=popup.change_session_num(db)
 
     elif event.endswith("::set_reminder"):
         time_data=(window["hour_display"].get(), window["day_display"].get(), window["month_display"].get(), window["year_display"].get() )
