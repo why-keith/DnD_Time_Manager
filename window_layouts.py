@@ -1,11 +1,13 @@
 import PySimpleGUI as sg
-from time import sleep
+#from time import sleep
 from os import listdir, mkdir
+from os.path import abspath
 from database_class import db, pickler
 from sys import exit
 import custom_themes
 import condition_lists
 from database_class import time_increment
+from error import error
 
 QT_ENTER_KEY1 =  'special 16777220'
 QT_ENTER_KEY2 =  'special 16777221'
@@ -55,7 +57,7 @@ def choice_box(text, window_name="", theme=None):
             window.close()
             return True
         
-def create_campaign(first=False, theme=None):
+def create_campaign(user_area, first=False, theme=None, ):
     sg.theme(theme)
     layout=[
             [sg.Text("New Campaign")],
@@ -89,11 +91,11 @@ def create_campaign(first=False, theme=None):
             name=window["campaign_name"].Get()
             
             try:
-                if name in listdir("campaigns"):
+                if name in listdir(abspath(user_area+"/campaigns")):
                     alert_box(text="Campaign \"{}\" already exists".format(name))
                     pass
                 else:
-                    _dir="campaigns/{}".format(name)
+                    _dir=abspath(user_area+"/campaigns/{}".format(name))
                     
                     new_db=db()
                     mkdir(_dir)
@@ -101,7 +103,8 @@ def create_campaign(first=False, theme=None):
                     
                     window.close()
                     return name
-            except:
+            except Exception as e:
+                error(e)
                 alert_box(text="\"{}\" is not a valid campaign name".format(name))
                 pass
                 
