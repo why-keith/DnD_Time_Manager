@@ -84,7 +84,7 @@ def update_db(db):
                 setattr(new_db,i, getattr(db,i)) 
             except Exception as e:
                 error(e)
-                
+    
         if "month_raw" not in attributes:  #fixes introduction of month_raw
             try:
                 new_db.month_raw=db.month[0]-1
@@ -183,7 +183,7 @@ if campaign==None:
             campaign=file
 #print(campaign)        
 if len(listdir(user_area+"/campaigns"))==0 or campaign==None:
-    campaign=popup.create_campaign(first=True, theme=pref["theme"])
+    campaign=popup.create_campaign(user_area ,first=True, theme=pref["theme"])
 
 pref["last campaign"].insert(0, campaign)
 pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
@@ -197,7 +197,6 @@ camp_dir=user_area+"/campaigns/"+campaign
   
 db=unpickle(camp_dir+"/"+campaign+".pkl")   
 db=update_db(db)
-
 
 #db.reminders=[]
 
@@ -224,7 +223,7 @@ main_layout=[
        
         [sg.HorizontalSeparator( pad=((0,0),(8,4)))],
        
-        [sg.Text("Time Adjustment"), sg.InputText("0", size=(5,1), key="hour_input", tooltip="Hour Change"), sg.InputText("0", size=(5,1), key="day_input", tooltip="Day Change"), sg.Button("Submit")],
+        [sg.Text("Time Adjustment"), sg.InputText("0", size=(5,1), key="hour_input", tooltip="Hour Change"), sg.InputText("0", size=(5,1), key="day_input", tooltip="Day Change"), sg.Button("Submit"), sg.VerticalSeparator(color="gray", ),  sg.Button("End Session")],
         
         [sg.InputText(size=(40,1), key="log_input", tooltip="Log Input"), sg.Button("Log"), sg.VerticalSeparator(color="gray"), sg.Button("Open Log")]
         ]
@@ -325,7 +324,7 @@ while True:
     # File --------------------------------------------------------------------
     elif event.endswith("::new_campaign"):
         old_campaign=campaign
-        campaign=popup.create_campaign(first=False, theme=pref["theme"])
+        campaign=popup.create_campaign(user_area, first=False, theme=pref["theme"])
         
         if campaign!=None:
             print(campaign)
@@ -357,45 +356,47 @@ while True:
         Tk().withdraw()
         try:
             path=askdirectory(initialdir=user_area+"/campaigns")#, title='Please select a directory')
-
+        
         except Exception as e:
             print("Invalid Folder Path\n")
             print(e)
             pass
         
       #  else:
-       #     print(path)
+      #  print(path)
         if path=="":
-            continue
-            try:
-                for file in listdir(path):
-                    if file.endswith(".pkl"):
-                        campaign=file.split(".")[0]
-                        camp_dir=user_area+"/campaigns/"+campaign
-                        db=unpickle(path+"/"+file) 
-                        db=update_db(db)
-                        update_values=["{}:00".format(db.hour), db.day, db.tenday, "{}. {}".format(db.month[0],db.month[1]), db.year]+[db.temperature, db.precipitation]+[db.windspeed, db.wind_dir]
-                        break
-            except Exception as e:
-                error(e)
-            
-            else:        
-                for i in range(len(updatable)):
-                    window[updatable[i]].Update(update_values[i])
-                window.set_title("D&D Time Manager - "+campaign)
-                window["hour_input"].Update("0")
-                window["day_input"].Update("0")
-                window["log_input"].Update("")
-                
-                pref["last campaign"].insert(0, campaign)
-                pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
+              print("Invalid Folder Path\n")
+              continue
 
-                update_menu()
-                pickler(user_area+"/pref.pkl", pref)
+        try:
+            for file in listdir(path):
+                print(file)
+                if file.endswith(".pkl"):
+                    print(file)
+                    campaign=file.split(".")[0]
+                    camp_dir=user_area+"/campaigns/"+campaign
+                    db=unpickle(path+"/"+file) 
+                    db=update_db(db)
+                    update_values=["{}:00".format(db.hour), db.day, db.tenday, "{}. {}".format(db.month[0],db.month[1]), db.year]+[db.temperature, db.precipitation]+[db.windspeed, db.wind_dir]
+                    break
+        except Exception as e:
+            error(e)
+        
+        else:        
+            for i in range(len(updatable)):
+                window[updatable[i]].Update(update_values[i])
+            window.set_title("D&D Time Manager - "+campaign)
+            window["hour_input"].Update("0")
+            window["day_input"].Update("0")
+            window["log_input"].Update("")
             
-        if path=="":
-            print("Invalid Folder Path\n")
-            pass
+            pref["last campaign"].insert(0, campaign)
+            pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
+
+            update_menu()
+            pickler(user_area+"/pref.pkl", pref)
+            
+        
 
     elif event.endswith("::rename_campaign"):
         
@@ -444,7 +445,7 @@ while True:
                         campaign=file
             print(campaign)        
             if len(listdir(user_area+"/campaigns"))==0 or campaign==None:
-                campaign=popup.create_campaign(first=True, theme=pref["theme"])
+                campaign=popup.create_campaign(user_area, first=True, theme=pref["theme"])
             
             pref["last campaign"].insert(0, campaign)
             pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
