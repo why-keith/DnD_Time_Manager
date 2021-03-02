@@ -108,7 +108,9 @@ def create_campaign(user_area, first=False, theme=None, ):
                 alert_box(text="\"{}\" is not a valid campaign name".format(name))
                 pass
                 
-def pref_window(pref, theme=None, using_RAW=False):
+def pref_window(pref, db, theme=None):
+
+    
     sg.theme(theme)
   #  themes=["Default", "Black", "DarkRed1", "SandyBeach"]
     #themes=["Black", "BlueMono", "BluePurple", "BrightColors", "BrownBlue", "Dark", "Dark2", "DarkAmber", "DarkBlack", "DarkBlack1", "DarkBlue", "DarkBlue1", "DarkBlue10", "DarkBlue11", "DarkBlue12", "DarkBlue13", "DarkBlue14", "DarkBlue15", "DarkBlue16", "DarkBlue17", "DarkBlue2", "DarkBlue3", "DarkBlue4", "DarkBlue5", "DarkBlue6", "DarkBlue7", "DarkBlue8", "DarkBlue9", "DarkBrown", "DarkBrown1", "DarkBrown2", "DarkBrown3", "DarkBrown4", "DarkBrown5", "DarkBrown6", "DarkGreen", "DarkGreen1", "DarkGreen2", "DarkGreen3", "DarkGreen4", "DarkGreen5", "DarkGreen6", "DarkGrey", "DarkGrey1", "DarkGrey2", "DarkGrey3", "DarkGrey4", "DarkGrey5", "DarkGrey6", "DarkGrey7", "DarkPurple", "DarkPurple1", "DarkPurple2", "DarkPurple3", "DarkPurple4", "DarkPurple5", "DarkPurple6", "DarkRed", "DarkRed1", "DarkRed2", "DarkTanBlue", "DarkTeal", "DarkTeal1", "DarkTeal10", "DarkTeal11", "DarkTeal12", "DarkTeal2", "DarkTeal3", "DarkTeal4", "DarkTeal5", "DarkTeal6", "DarkTeal7", "DarkTeal8", "DarkTeal9", "Default", "Default1", "DefaultNoMoreNagging", "Green", "GreenMono", "GreenTan", "HotDogStand", "Kayak", "LightBlue", "LightBlue1", "LightBlue2", "LightBlue3", "LightBlue4", "LightBlue5", "LightBlue6", "LightBlue7", "LightBrown", "LightBrown1", "LightBrown10", "LightBrown11", "LightBrown12", "LightBrown13", "LightBrown2", "LightBrown3", "LightBrown4", "LightBrown5", "LightBrown6", "LightBrown7", "LightBrown8", "LightBrown9", "LightGray1", "LightGreen", "LightGreen1", "LightGreen10", "LightGreen2", "LightGreen3", "LightGreen4", "LightGreen5", "LightGreen6", "LightGreen7", "LightGreen8", "LightGreen9", "LightGrey", "LightGrey1", "LightGrey2", "LightGrey3", "LightGrey4", "LightGrey5", "LightGrey6", "LightPurple", "LightTeal", "LightYellow", "Material1", "Material2", "NeutralBlue", "Purple", "Reddit", "Reds", "SandyBeach", "SystemDefault", "SystemDefault1", "SystemDefaultForReal", "Tan", "TanBlue", "TealMono", "Topanga"]
@@ -118,21 +120,22 @@ def pref_window(pref, theme=None, using_RAW=False):
         if len(i)>theme_len:
             theme_len=len(i)
     
-    
+    RAW_tooltip="Use rules as written in DMG ch. 5 (less consistant)"
     layout=[
             [sg.Text("APPEARANCE (requires restart)")],
             [sg.HorizontalSeparator()],
 
-      #      [sg.Text("Theme"), sg.Combo(themes, key="themes", size=(theme_len+2, 1), default_value=theme, readonly=True)],
-       #     [sg.Text("Show Tenday"), sg.Checkbox("", default=pref["show_tenday"], key="show_tenday")],
-
-            [sg.Column([[sg.Text("Theme")],[sg.Text("Show Tenday")]]), sg.Column([[sg.Combo(themes, key="themes", size=(theme_len+2, 1), default_value=theme, readonly=True)], [sg.Checkbox("", default=pref["show_tenday"], key="show_tenday")]])],
+            [sg.Column([[sg.Text("Theme")],[sg.Text("Show Tenday")]]), 
+             sg.Column([[sg.Combo(themes, key="themes", size=(theme_len+2, 1), default_value=theme, readonly=True)], [sg.Checkbox("", default=pref["show_tenday"], key="show_tenday")]])
+             ],
             
             [sg.Text("")],
-            [sg.Text("APP BEHAVIOUR")],
+            [sg.Text("CAMPAIGN SETTINGS")],
             [sg.HorizontalSeparator()],
-            #[sg.Text("RAW Weather"),sg.Checkbox("", default=using_RAW, key="RAW_weather")],
-            [sg.Column([[sg.Text("RAW Weather"),sg.Checkbox("", default=using_RAW, key="RAW_weather")]])],
+
+            [sg.Column([ [sg.Text("RAW Weather", tooltip=RAW_tooltip)], [sg.Text("Session Number")] ]),
+             sg.Column([ [sg.Checkbox("", default=db.RAW, key="RAW_weather", tooltip=RAW_tooltip)], [sg.Input(str(db.session_num), size=(3,None), key="session_num")] ])
+            ],
             [sg.Button("Save"), sg.Button("Cancel")],
             ]
     window=sg.Window("Preferences", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False)
@@ -144,16 +147,25 @@ def pref_window(pref, theme=None, using_RAW=False):
             break
         
         elif event=="Save":
+            
+            try:
+                _=int(window["session_num"].get())
+            except ValueError:
+                alert_box(text="Please enter a valid session number", theme=theme)
+                window["session_num"].Update(str(db.session_num))
+                continue
+            
             save=True
             if window["themes"].Get() in themes:
                 pref["new_theme"]=window["themes"].Get()
-            using_RAW=bool(window["RAW_weather"].get())
             pref["show_tenday"]=bool(window["show_tenday"].Get())
-          #  print(pref["theme"])
+            
+            db.RAW=bool(window["RAW_weather"].get())
+            db.session_num=int(window["session_num"].get())
             break
         
     window.close()        
-    return pref, save, using_RAW
+    return pref, save, db
             
     
 def rename_window(old_name, theme=None):
@@ -344,7 +356,7 @@ def view_reminders(db, time_data, theme=None):
          #   else:
           #      print(event)
         window.close()         
-    
+        
                 
 def test_window(theme=None):
     sg.theme(theme)
