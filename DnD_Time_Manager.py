@@ -138,6 +138,13 @@ def move_files(target_path):
 
     return
 
+def end_session():
+    log=open("{}/{}.txt".format(camp_dir,campaign), "a")
+    log.write("End of session {} ------------------------------------------------------\n".format(db.session_num))
+    log.close()
+    db.session_num+=1
+    pickler(camp_dir+"/"+campaign+".pkl", db)
+
 # Preferences & campaign loading-----------------------------------------------
 if DEV_MODE==False:
     user_area=abspath(getenv('LOCALAPPDATA')+"/JP-Carr/DnD_Time_Manager")
@@ -319,13 +326,7 @@ while True:
         print(db.reminders)
         
     elif event == "End Session":
-        log=open("{}/{}.txt".format(camp_dir,campaign), "a")
-        log.write("Session {} --------------------------------------------------------".format(db.session_num))
-        log.close()
-        db.session_num+=1
-        pickler(camp_dir+"/"+campaign+".pkl", db)
-        
-        
+        end_session()     
         
 # Menu Events -----------------------------------------------------------------
     
@@ -598,7 +599,9 @@ while True:
    #     print (event)  
 
 # End of loop------------------------------------------------------------------
-       
+if pref["end_session_on_close"]==True and DEV_MODE==False:
+    end_session()
+
 pref["theme"]=pref["new_theme"]   
 pickler(user_area+"/pref.pkl", pref)
 window.close()
