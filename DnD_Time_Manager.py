@@ -14,7 +14,7 @@ from urllib.request import urlopen
 from shutil import copyfile, copytree
 from sys import exit
 
-VERSION="v0.9.0"   
+VERSION="v0.9.0"
 DEV_MODE=True
 
 # Functions--------------------------------------------------------------------
@@ -200,7 +200,7 @@ pickler(user_area+"/pref.pkl", pref)
     
 #print(pref["last campaign"])
 #print(campaign)  
-camp_dir=user_area+"/campaigns/"+campaign
+camp_dir=abspath(user_area+"/campaigns/"+campaign)
 
   
 db=unpickle(camp_dir+"/"+campaign+".pkl")   
@@ -338,7 +338,7 @@ while True:
         
         if campaign!=None:
             print(campaign)
-            camp_dir=user_area+"/campaigns/"+campaign
+            camp_dir=abspath(user_area+"/campaigns/"+campaign)
             for file in listdir(camp_dir):
                     if file.endswith(".pkl"):
                         campaign=file.split(".")[0]
@@ -384,7 +384,7 @@ while True:
                 if file.endswith(".pkl"):
                     print(file)
                     campaign=file.split(".")[0]
-                    camp_dir=user_area+"/campaigns/"+campaign
+                    camp_dir=abspath(user_area+"/campaigns/"+campaign)
                     db=unpickle(path+"/"+file) 
                     db=update_db(db)
                     update_values=["{}:00".format(db.hour), db.day, db.tenday, "{}. {}".format(db.month[0],db.month[1]), db.year]+[db.temperature, db.precipitation]+[db.windspeed, db.wind_dir]
@@ -426,7 +426,7 @@ while True:
                 rmdir(camp_dir)
                 old_campaign=campaign
                 campaign=new_campaign
-                camp_dir=user_area+"/campaigns/"+campaign
+                camp_dir=abspath(user_area+"/campaigns/"+campaign)
                 window.set_title("D&D Time Manager - "+campaign)
                 pref["last campaign"].insert(0, campaign)
                 pref["last campaign"].remove(old_campaign)
@@ -465,7 +465,7 @@ while True:
                 
             print(pref["last campaign"])
             print(campaign)  
-            camp_dir=user_area+"/campaigns/"+campaign            
+            camp_dir=abspath(user_area+"/campaigns/"+campaign)            
             
             window.set_title("D&D Time Manager - "+campaign)
             db=unpickle(camp_dir+"/"+campaign+".pkl") 
@@ -520,7 +520,7 @@ while True:
     elif event.endswith("::view_reminders"):
         time_data=(window["hour_display"].get(), window["day_display"].get(), window["month_display"].get(), window["year_display"].get() )
         if popup.view_reminders(db, time_data, theme=pref["theme"])=="set_reminder":
-            remind_data=popup.set_reminder(time_data, pref, theme=pref["theme"])
+            remind_data, pref=popup.set_reminder(time_data, pref, theme=pref["theme"])
             if remind_data !=False:
                 db.reminders.append(remind_data)
                 print(db.reminders)
@@ -565,7 +565,7 @@ while True:
             try:
                 for file in listdir(user_area+"/campaigns/"+event):
                     if file.endswith(".pkl"):
-                        camp_dir=user_area+"/campaigns/"+event
+                        camp_dir=abspath(user_area+"/campaigns/"+event)
                         campaign=file.split(".")[0]
                         db=unpickle(camp_dir+"/"+file) 
                         db=update_db(db)
