@@ -8,7 +8,7 @@ At present D&DTM is only available as a standalone .zip archive for Microsoft Wi
 To start the program, run "DnD_Time_Manager.exe". This will present you with the app's GUI:
 ![GUI_v0.5.0](https://github.com/JP-Carr/DnD_Time_Manager/blob/media/Images/GUI/v0.7.0/GUI_0.7.0_Default.JPG)
 #### Layout
-* Row 1 - In-game time: Time(hh:mm), Day, Tenday, Month, Year (Calendar of Harptos)
+* Row 1 - In-game time (Calendar of Harptos): Time(hh:mm), Day, Tenday, Month, Year
 * Row 2 - Temperature and precipitation level
 * Row 3 - Wind Speed and direction
 * Row 4 - Hour change input, Day change input, Submit time change (change can be any positive or negative integer)
