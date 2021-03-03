@@ -14,7 +14,7 @@ from urllib.request import urlopen
 from shutil import copyfile, copytree
 from sys import exit
 
-VERSION="v0.9.0"    
+VERSION="v0.9.0"   
 DEV_MODE=True
 
 # Functions--------------------------------------------------------------------
@@ -168,6 +168,7 @@ else:
 
 #print(pref["version"])
 if pref["version"]!=VERSION:      # updates pref file with any new entries
+    print("updating pref file to "+VERSION)
     for key in default_pref:
             if key not in pref:
                 pref[key]=default_pref[key]
@@ -519,7 +520,7 @@ while True:
     elif event.endswith("::view_reminders"):
         time_data=(window["hour_display"].get(), window["day_display"].get(), window["month_display"].get(), window["year_display"].get() )
         if popup.view_reminders(db, time_data, theme=pref["theme"])=="set_reminder":
-            remind_data=popup.set_reminder(time_data, theme=pref["theme"])
+            remind_data=popup.set_reminder(time_data, pref, theme=pref["theme"])
             if remind_data !=False:
                 db.reminders.append(remind_data)
                 print(db.reminders)
