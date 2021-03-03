@@ -116,7 +116,7 @@ def update_menu():
     recent_camps=pref["last campaign"][0:3]
     menu_dict={
         "File": ["New campaign...::new_campaign", "Open...::open_campaign", "Open recent", recent_camps, "Rename campaign::rename_campaign", "Delete campaign::delete_campaign", "Open save directory...::save_directory", "Preferences::preferences"],
-        "Tools":["Get raw time::raw_time_out", "Set session no.::set_session_no", "Set reminder::set_reminder", "View reminders::view_reminders"],
+        "Tools":["Get raw time::raw_time_out", "Set reminder::set_reminder", "View reminders::view_reminders"],
         "Help": ["About::about", "ReadMe::readme", "Source Code::source_code"]
       }
     try:
@@ -506,9 +506,6 @@ while True:
         print(db.day_raw,db.hour)
         popup.alert_box(text="{} hours, {} days\n(This value can be accessed from the error log)".format(db.hour,db.day_raw), window_name="Raw Time", sound=False, theme=pref["theme"])
         error("Raw time request - {} hours, {} days".format(db.hour,db.day_raw), sound=False)
-        
-    #elif event.endswith("::set_session_no"):
-     #   _=popup.change_session_num(db)
 
     elif event.endswith("::set_reminder"):
         time_data=(window["hour_display"].get(), window["day_display"].get(), window["month_display"].get(), window["year_display"].get() )
