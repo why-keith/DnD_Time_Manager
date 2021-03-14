@@ -150,8 +150,11 @@ if DEV_MODE==False:
     user_area=abspath(getenv('LOCALAPPDATA')+"/JP-Carr/DnD_Time_Manager")
 else:
     user_area=abspath(getenv('LOCALAPPDATA')+"/JP-Carr/DnD_Time_Manager_DEV")
+    
+if exists(user_area)==False: #creates directory for save data
+    mkdir(user_area)
 
-if version_compare(VERSION, current_ver="v0.9.0")==False:    
+if version_compare(VERSION, current_ver="v0.9.0")==False:    #moves files from program install location to user area
     if popup.alert_box(text="Moving campaign and preference files to user area\nFiles will be located at:\n"+user_area, window_name="Moving files", theme="Default")==True:
         print("moving files...")
         move_files(user_area)
@@ -420,7 +423,7 @@ while True:
             except FileExistsError as e:
                 popup.alert_box(text="Capaign \"{}\" already exists".format(new_campaign), theme=pref["theme"])
             except Exception as e:
-                popup.alert_box(text="Unable to rename capaign", theme=pref["theme"])
+                popup.alert_box(text="Unable to rename campaign", theme=pref["theme"])
                 print(e)
             else:
                 rmdir(camp_dir)
