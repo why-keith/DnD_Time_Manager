@@ -6,21 +6,27 @@ At present D&DTM is only available as a standalone .zip archive for Microsoft Wi
 
 ## Usage
 To start the program, run "DnD_Time_Manager.exe". This will present you with the app's GUI:
-![GUI_v0.5.0](https://github.com/JP-Carr/DnD_Time_Manager/blob/media/Images/GUI/v0.7.0/GUI_0.7.0_Default.JPG)
+![GUI_v0.9.0](https://github.com/JP-Carr/DnD_Time_Manager/blob/media/Images/GUI/v0.9.0/GUI_0.9.0_Default.jpg)
 #### Layout
 * Row 1 - In-game time (Calendar of Harptos): Time(hh:mm), Day, Tenday, Month, Year
 * Row 2 - Temperature and precipitation level
 * Row 3 - Wind Speed and direction
-* Row 4 - Hour change input, Day change input, Submit time change (change can be any positive or negative integer)
-* Row 5 - Log input box, Enter log, open log.txt
------------------------------------
+* Row 4 - Hour change input, Day change input, Submit time change (change can be any positive or negative integer), Log end of session
+* Row 5 - Log input box, Enter log, open log file
+
 Entering values in the time input boxes and clicking "Submit" will update the in-game time. Weather conditions are automatically rolled on a day change.
 The "Log" function allows for notes to be recorded from the GUI, the log is stored alongside the in-game time and date for easy reference.
 
-### Campaigns
-Each campaign is handled separately and can be edited and switched between at will. 
+## Campaigns
+Each campaign is handled separately and can be edited and switched between at will. Save directory can be accessed through: "File" → "Open save directory..."
 
-## Updating to v0.7.0
+-----------------------------------
+## Update Notes
+### Updating to v0.9.0
+Upon running this version for the first time, any save data will be moved from the installation folder to the user's "APPDATA/local" directory.
+This will simplify future updates and will be performed automatically, but ensuring you have a copy of your data (campaign and pref files) before updating is recommended  
+
+### Updating to v0.7.0
 Campaign databases created in older version are incompatible with v0.7.0.
 For each campaign:
 1. Backup the log file 
@@ -31,7 +37,7 @@ For each campaign:
 6. Access the campaign directory through: File → Open save directory... → [campaign name]
 7. Place the backed up log file in the campaign directory, ensuring the name of the file matches that of the directory
 
-## Updating to v0.5.0
+### Updating to v0.5.0
 Due to the changes to campaigns, updating to v0.5.0 while keeping saved data requires further steps to work correctly.
 1. Backup db.pkl and log.txt from your install directory to a separate location
 2. Replace the old install with the new release version
