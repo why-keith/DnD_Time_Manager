@@ -10,7 +10,7 @@ from default_pref import default_pref
 from tkinter import Tk
 from tkinter.filedialog import askdirectory
 from send2trash import send2trash
-from urllib.request import urlopen
+#from urllib.request import urlopenf
 from sys import exit
 from os import remove
 from shutil import copyfile, copytree, rmtree
