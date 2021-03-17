@@ -11,11 +11,17 @@ from tkinter import Tk
 from tkinter.filedialog import askdirectory
 from send2trash import send2trash
 from urllib.request import urlopen
-from shutil import copyfile, copytree
 from sys import exit
 
+
 VERSION="v0.9.0"
-DEV_MODE=True
+
+if exists(".gitignore"):
+    DEV_MODE=True
+else:
+    DEV_MODE=False
+    
+#DEV_MODE=False #OVERRIDE
 
 # Functions--------------------------------------------------------------------
 
@@ -127,15 +133,34 @@ def update_menu():
     return menu_dict
 
 def move_files(target_path):
+    from os import remove
+    from shutil import copyfile, copytree, rmtree
+    
     try:
         copytree("campaigns",abspath(target_path+"/campaigns"))
     except Exception as e:
         error(e)
+        exit()
+        
+    if "campaigns" in listdir(target_path):
+        print("deleting")
+        rmtree("campaigns")
+    else:
+        error(abspath(target_path+"/campaigns")+" was not moved successfully")
+        exit()
+    #------------------------------------------
     try:
         copyfile("pref.pkl", abspath(target_path+"/pref.pkl"))
     except Exception as e:
         error(e)
-
+        exit()
+        
+    if "pref.pkl" in listdir(target_path):
+        print("deleting")
+        remove("pref.pkl")
+    else:
+        error(abspath(target_path+"/pref.pkl")+" was not moved successfully")
+        exit()
     return
 
 def end_session():
@@ -154,11 +179,12 @@ else:
 if exists(user_area)==False: #creates directory for save data
     mkdir(user_area)
 
-if version_compare(VERSION, current_ver="v0.9.0")==False:    #moves files from program install location to user area
+if exists("pref.pkl") or exists("campaigns"):    #moves files from program install location to user area
     if popup.alert_box(text="Moving campaign and preference files to user area\nFiles will be located at:\n"+user_area, window_name="Moving files", theme="Default")==True:
         print("moving files...")
         move_files(user_area)
     else:
+        print(exists("pref.pkl"),exists("campaigns"))
         exit()
 
 if "pref.pkl" in listdir(user_area):      #Loads pref file or creates new one
