@@ -24,7 +24,11 @@ Each campaign is handled separately and can be edited and switched between at wi
 ## Update Notes
 ### Updating to v0.9.0
 Upon running this version for the first time, any save data will be moved from the installation folder to the user's "APPDATA/local" directory.
-This will simplify future updates and will be performed automatically, but ensuring you have a copy of your data (campaign and pref files) before updating is recommended  
+This will simplify future updates and will be performed automatically, but ensuring you have a copy of your data (campaign and pref files) before updating is recommended
+1. Make a copy of "pref.pkl" and "/campaigns"
+2. Unzip new version in desired directory
+3. Return "pref.pkl" and "/campaigns" to the install directory
+4. Run the new version of "DnD_Time_Manager.exe"
 
 ### Updating to v0.7.0
 Campaign databases created in older version are incompatible with v0.7.0.
