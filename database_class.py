@@ -2,7 +2,6 @@ import pickle
 from random import choice, randint
 import condition_lists as conditions
 from error import error
-from numpy import array
 from os.path import abspath
 ########################################################
 
@@ -155,7 +154,8 @@ def time_comparison(time0, time1):
 
 def time_increment(start_time, increment):
 
-    new_time=array(start_time)+array(increment)
+
+    new_time=[i+j for i,j in zip(start_time, increment)]
     limits=[24, 30, 12, 1e99]
     new_time[0]+=1
     for i in range(len(new_time)-1):
