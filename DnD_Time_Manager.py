@@ -12,6 +12,8 @@ from tkinter.filedialog import askdirectory
 from send2trash import send2trash
 from urllib.request import urlopen
 from sys import exit
+from os import remove
+from shutil import copyfile, copytree, rmtree
 
 
 VERSION="v0.9.0"
@@ -133,9 +135,8 @@ def update_menu():
     return menu_dict
 
 def move_files(target_path):
-    from os import remove
-    from shutil import copyfile, copytree, rmtree
     
+    deleted=True
     try:
         copytree("campaigns",abspath(target_path+"/campaigns"))
     except Exception as e:
@@ -144,11 +145,16 @@ def move_files(target_path):
         
     if "campaigns" in listdir(target_path):
         print("deleting")
-        rmtree("campaigns")
+        try:
+            rmtree("campaigns")
+        except Exception as e:
+            error(e)
+            deleted=False
     else:
         error(abspath(target_path+"/campaigns")+" was not moved successfully")
         exit()
-    #------------------------------------------
+        
+
     try:
         copyfile("pref.pkl", abspath(target_path+"/pref.pkl"))
     except Exception as e:
@@ -157,11 +163,15 @@ def move_files(target_path):
         
     if "pref.pkl" in listdir(target_path):
         print("deleting")
-        remove("pref.pkl")
+        try:
+            remove("pref.pkl")
+        except Exception as e:
+            error(e)
+            deleted=False
     else:
         error(abspath(target_path+"/pref.pkl")+" was not moved successfully")
         exit()
-    return
+    return deleted
 
 def end_session():
     log=open("{}/{}.txt".format(camp_dir,campaign), "a")
@@ -169,22 +179,28 @@ def end_session():
     log.close()
     db.session_num+=1
     pickler(camp_dir+"/"+campaign+".pkl", db)
+    
+def debug_log(text):
+    file= open("debug.txt","a") 
+    file.write(str(text)+"\n")
+    file.close()
 
 # Preferences & campaign loading-----------------------------------------------
+
 if DEV_MODE==False:
     user_area=abspath(getenv('LOCALAPPDATA')+"/JP-Carr/DnD_Time_Manager")
 else:
     user_area=abspath(getenv('LOCALAPPDATA')+"/JP-Carr/DnD_Time_Manager_DEV")
-    
+
 if exists(user_area)==False: #creates directory for save data
     mkdir(user_area)
 
 if exists("pref.pkl") or exists("campaigns"):    #moves files from program install location to user area
     if popup.alert_box(text="Moving campaign and preference files to user area\nFiles will be located at:\n"+user_area, window_name="Moving files", theme="Default")==True:
         print("moving files...")
-        move_files(user_area)
+        if move_files(user_area)==False:
+            popup.alert_box(text="Unable to delete \"pref.pkl\" and/or \"/campaigns\"\nPlease remove manually")
     else:
-        print(exists("pref.pkl"),exists("campaigns"))
         exit()
 
 if "pref.pkl" in listdir(user_area):      #Loads pref file or creates new one
@@ -206,19 +222,19 @@ if pref["version"]!=VERSION:      # updates pref file with any new entries
     
 if "campaigns" not in listdir(user_area):
     mkdir(user_area+"/campaigns")
-    
+   
 campaign=None
 if len(listdir(user_area+"/campaigns"))!=0:    #loads most recent possible campaign
     for i in pref["last campaign"]:
         if i in listdir(user_area+"/campaigns") and exists(user_area+"/campaigns/{}/{}.pkl".format(i, i)):
             campaign=i
             break
-        
+       
 if campaign==None:
     for file in listdir(user_area+"/campaigns"):
         if exists(user_area+"/campaigns/{}/{}.pkl".format(file, file)):
             campaign=file
-#print(campaign)        
+        
 if len(listdir(user_area+"/campaigns"))==0 or campaign==None:
     campaign=popup.create_campaign(user_area ,first=True, theme=pref["theme"])
 
