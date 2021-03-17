@@ -1,10 +1,13 @@
 import PySimpleGUI as sg
-from time import sleep
+#from time import sleep
 from os import listdir, mkdir
+from os.path import abspath
 from database_class import db, pickler
 from sys import exit
 import custom_themes
 import condition_lists
+from database_class import time_increment
+from error import error
 
 QT_ENTER_KEY1 =  'special 16777220'
 QT_ENTER_KEY2 =  'special 16777221'
@@ -12,9 +15,11 @@ QT_ENTER_KEY2 =  'special 16777221'
 icon_path="dnd_logo.ico"
 
 def alert_box(text="TEXT HERE", window_name="ALERT", button_text="OK", sound=True, theme=None):
+    lines=text.split("\n")
+    
     sg.theme(theme)
-    layout=[
-            [sg.Text("  "+text+"  ")],
+    layout=[[sg.Text("  "+lines[i]+"  ")] for i in range(len(lines))]+[
+          #  [sg.Text("  "+text+"  ")],
             [sg.Button(button_text)]
             ]
     window=sg.Window(window_name, layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=True, return_keyboard_events=True, )
@@ -25,10 +30,10 @@ def alert_box(text="TEXT HERE", window_name="ALERT", button_text="OK", sound=Tru
         event, values = window.read()
         if event == sg.WIN_CLOSED:
             window.close()
-            return
+            return False
         elif event==button_text or event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
             window.close()
-            return
+            return True
             
 
 def choice_box(text, window_name="", theme=None):
@@ -52,7 +57,7 @@ def choice_box(text, window_name="", theme=None):
             window.close()
             return True
         
-def create_campaign(first=False, theme=None):
+def create_campaign(user_area, first=False, theme=None, ):
     sg.theme(theme)
     layout=[
             [sg.Text("New Campaign")],
@@ -86,11 +91,11 @@ def create_campaign(first=False, theme=None):
             name=window["campaign_name"].Get()
             
             try:
-                if name in listdir("campaigns"):
+                if name in listdir(abspath(user_area+"/campaigns")):
                     alert_box(text="Campaign \"{}\" already exists".format(name))
                     pass
                 else:
-                    _dir="campaigns/{}".format(name)
+                    _dir=abspath(user_area+"/campaigns/{}".format(name))
                     
                     new_db=db()
                     mkdir(_dir)
@@ -98,11 +103,14 @@ def create_campaign(first=False, theme=None):
                     
                     window.close()
                     return name
-            except:
+            except Exception as e:
+                error(e)
                 alert_box(text="\"{}\" is not a valid campaign name".format(name))
                 pass
                 
-def pref_window(pref, theme=None, using_RAW=False):
+def pref_window(pref, db, theme=None):
+
+    
     sg.theme(theme)
   #  themes=["Default", "Black", "DarkRed1", "SandyBeach"]
     #themes=["Black", "BlueMono", "BluePurple", "BrightColors", "BrownBlue", "Dark", "Dark2", "DarkAmber", "DarkBlack", "DarkBlack1", "DarkBlue", "DarkBlue1", "DarkBlue10", "DarkBlue11", "DarkBlue12", "DarkBlue13", "DarkBlue14", "DarkBlue15", "DarkBlue16", "DarkBlue17", "DarkBlue2", "DarkBlue3", "DarkBlue4", "DarkBlue5", "DarkBlue6", "DarkBlue7", "DarkBlue8", "DarkBlue9", "DarkBrown", "DarkBrown1", "DarkBrown2", "DarkBrown3", "DarkBrown4", "DarkBrown5", "DarkBrown6", "DarkGreen", "DarkGreen1", "DarkGreen2", "DarkGreen3", "DarkGreen4", "DarkGreen5", "DarkGreen6", "DarkGrey", "DarkGrey1", "DarkGrey2", "DarkGrey3", "DarkGrey4", "DarkGrey5", "DarkGrey6", "DarkGrey7", "DarkPurple", "DarkPurple1", "DarkPurple2", "DarkPurple3", "DarkPurple4", "DarkPurple5", "DarkPurple6", "DarkRed", "DarkRed1", "DarkRed2", "DarkTanBlue", "DarkTeal", "DarkTeal1", "DarkTeal10", "DarkTeal11", "DarkTeal12", "DarkTeal2", "DarkTeal3", "DarkTeal4", "DarkTeal5", "DarkTeal6", "DarkTeal7", "DarkTeal8", "DarkTeal9", "Default", "Default1", "DefaultNoMoreNagging", "Green", "GreenMono", "GreenTan", "HotDogStand", "Kayak", "LightBlue", "LightBlue1", "LightBlue2", "LightBlue3", "LightBlue4", "LightBlue5", "LightBlue6", "LightBlue7", "LightBrown", "LightBrown1", "LightBrown10", "LightBrown11", "LightBrown12", "LightBrown13", "LightBrown2", "LightBrown3", "LightBrown4", "LightBrown5", "LightBrown6", "LightBrown7", "LightBrown8", "LightBrown9", "LightGray1", "LightGreen", "LightGreen1", "LightGreen10", "LightGreen2", "LightGreen3", "LightGreen4", "LightGreen5", "LightGreen6", "LightGreen7", "LightGreen8", "LightGreen9", "LightGrey", "LightGrey1", "LightGrey2", "LightGrey3", "LightGrey4", "LightGrey5", "LightGrey6", "LightPurple", "LightTeal", "LightYellow", "Material1", "Material2", "NeutralBlue", "Purple", "Reddit", "Reds", "SandyBeach", "SystemDefault", "SystemDefault1", "SystemDefaultForReal", "Tan", "TanBlue", "TealMono", "Topanga"]
@@ -112,12 +120,31 @@ def pref_window(pref, theme=None, using_RAW=False):
         if len(i)>theme_len:
             theme_len=len(i)
     
+    RAW_tooltip=" Use rules as written in DMG ch. 5 (less consistant) "
+    auto_end_tooltip=" Marks the end of a session in the campaign log when the app is closed "
     
-    layout=[
-            [sg.Text("Appearance")],
+    layout=[[sg.Text("APPEARANCE (requires restart)")],
             [sg.HorizontalSeparator()],
-            [sg.Text("Theme (requires restart)"), sg.Combo(themes, key="themes", size=(theme_len+2, 1), default_value=theme, readonly=True)],
-            [sg.Text("RAW Weather"),sg.Checkbox("", default=using_RAW, key="RAW_weather")],
+
+            [sg.Column([[sg.Text("Theme")],[sg.Text("Show Tenday")]]), 
+             sg.Column([[sg.Combo(themes, key="themes", size=(theme_len+2, 1), default_value=theme, readonly=True)], [sg.Checkbox("", default=pref["show_tenday"], key="show_tenday")]])
+             ],
+        
+            [sg.Text("")],
+            [sg.Text("APPLICATION SETTINGS")],
+            [sg.HorizontalSeparator()],
+
+            [sg.Column([[sg.Text("Auto-End Session", tooltip=auto_end_tooltip)],]), 
+             sg.Column([[sg.Checkbox("", default=pref["end_session_on_close"], key="auto_end", tooltip=auto_end_tooltip)], ])
+             ],
+            
+            [sg.Text("")],
+            [sg.Text("CAMPAIGN SETTINGS")],
+            [sg.HorizontalSeparator()],
+
+            [sg.Column([ [sg.Text("RAW Weather", tooltip=RAW_tooltip)], [sg.Text("Session Number")] ]),
+             sg.Column([ [sg.Checkbox("", default=db.RAW, key="RAW_weather", tooltip=RAW_tooltip)], [sg.Input(str(db.session_num), size=(3,None), key="session_num")] ])
+            ],
             [sg.Button("Save"), sg.Button("Cancel")],
             ]
     window=sg.Window("Preferences", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False)
@@ -129,19 +156,26 @@ def pref_window(pref, theme=None, using_RAW=False):
             break
         
         elif event=="Save":
+            
+            try:
+                _=int(window["session_num"].get())
+            except ValueError:
+                alert_box(text="Please enter a valid session number", theme=theme)
+                window["session_num"].Update(str(db.session_num))
+                continue
+            
             save=True
             if window["themes"].Get() in themes:
                 pref["new_theme"]=window["themes"].Get()
-            using_RAW=window["RAW_weather"].get()
-                
+            pref["show_tenday"]=bool(window["show_tenday"].Get())
+            pref["end_session_on_close"]=bool(window["auto_end"].Get())
             
-            
-                
-            print(pref["theme"])
+            db.RAW=bool(window["RAW_weather"].get())
+            db.session_num=int(window["session_num"].get())
             break
         
     window.close()        
-    return pref, save, using_RAW
+    return pref, save, db
             
     
 def rename_window(old_name, theme=None):
@@ -182,48 +216,99 @@ def rename_window(old_name, theme=None):
                     pass
                 
                 
-def set_reminder(time_data, theme=None): 
+def set_reminder(time_data, pref, theme=None): 
     sg.theme(theme)
-
+    
     hour, day, month, year=time_data
+    hour=int(hour.split(":")[0])
+    day=int(day)
+    month=int(month.split(".")[0])
+    year=int(year)
 
-    layout=[
+    radio_date=(pref["set_reminder_option"]=="date")
+    
+    layout= [
             [sg.Text("Text: "), sg.InputText("", size=(47,1), key="reminder_text")],
             [sg.HorizontalSeparator(color="gray")],
             [sg.Text("Alert Time")],
-            [sg.Combo([str(i)+":00" for i in range(0,24)], default_value=hour,size=(6,1), readonly=True,key="hour", tooltip="Time - 24 hour"),   sg.Combo(list(range(1,31)), default_value=day, size=(3,1), readonly=True,key="day", tooltip="Day of the month"), sg.Combo(["{}. {}".format(condition_lists.months.index(i)+1,i) for i in condition_lists.months], default_value=month, size=(30,1), readonly=True,key="month", tooltip="Month"),   sg.InputText(year, size=(5,1), readonly=False,key="year", tooltip="Year - DR")],
+            [sg.Radio("", group_id="rd0", default=radio_date, enable_events=True, key="select_date"), sg.VerticalSeparator(color="gray"),  sg.Combo([str(i)+":00" for i in range(0,24)], default_value=hour,size=(6,1), readonly=True,key="hour", tooltip="Time - 24 hour"),   sg.Combo(list(range(1,31)), default_value=day, size=(3,1), readonly=True,key="day", tooltip="Day of the month"), sg.Combo(["{}. {}".format(condition_lists.months.index(i)+1,i) for i in condition_lists.months], default_value=time_data[2], size=(30,1), readonly=True,key="month", tooltip="Month"),   sg.InputText(year, size=(5,1), readonly=False,key="year", tooltip="Year - DR",  use_readonly_for_disable=False)],
             [sg.HorizontalSeparator(color="gray")],
+            [sg.Radio("", group_id="rd0", default=not radio_date, enable_events=True, key="select_time"), sg.VerticalSeparator(color="gray"), sg.Text(" Hour:"), sg.InputText("0",size=(5,1), key="hour_input", tooltip="Time - 24 hour"),  sg.Text(" Day:"), sg.InputText("0", size=(5,1),key="day_input", tooltip="Day of the month"), sg.Text(" Month:"), sg.InputText("0", size=(5,1), key="month_input", tooltip="Month"),  sg.Text(" Year:"), sg.InputText("0", size=(5,1), key="year_input", tooltip="Year - DR"), sg.Text("")],
             [sg.Button("Confirm"), sg.Button("Cancel")],
             ]
     
     window=sg.Window("Set Reminder", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True, disable_minimize=False, return_keyboard_events=True)
 
+    if radio_date==True:
+        for j in ("hour_input","day_input","month_input","year_input"):
+            window[j].update(disabled=True)
+    else:
+        for i in ("hour","day","month","year"):
+            window[i].update(disabled=True)
+            
     while True:
         event, values = window.read()
         focused_enter=None
         if event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
             active_element=window.FindElementWithFocus()          #Dectects if the enter key has been pressed and checks which element is active
-            print(active_element)
+    #        print(active_element)
             
             if active_element==window["reminder_text"]:
                 focused_enter="reminder_text"
         
         if event == sg.WIN_CLOSED or event=="Cancel":
             window.close()
-            return False
+            return False,pref
+        
+        elif event=="select_time":
+            for i in ("hour","day","month","year"):
+                window[i].update(disabled=True)
+            for j in ("hour_input","day_input","month_input","year_input"):
+                window[j].update(disabled=False)
+        elif event=="select_date":
+            for i in ("hour","day","month","year"):
+                window[i].update(disabled=False)
+            for j in ("hour_input","day_input","month_input","year_input"):
+                window[j].update(disabled=True)
         
         elif event=="Confirm" or focused_enter=="reminder_text":
             text=window["reminder_text"].get()
             if text=="":
                 print("\a")
                 continue
-            hour=int(window["hour"].get().split(":")[0])
-            day=int(window["day"].get())
-            month=int(window["month"].get().split(".")[0])
-            year=int(window["year"].get())
+            
+            if values["select_date"]==True:
+                hour=int(window["hour"].get().split(":")[0])
+                day=int(window["day"].get())
+                month=int(window["month"].get().split(".")[0])
+                year=int(window["year"].get())
+                pref["set_reminder_option"]="date"
+            
+            elif values["select_time"]==True:
+               d_hour=(window["hour_input"]).get()
+               d_day=(window["day_input"]).get()
+               d_month=(window["month_input"]).get()
+               d_year=(window["year_input"]).get()
+               pref["set_reminder_option"]="time"
+               
+               for i in (d_hour,d_day,d_month,d_year):
+                   try:
+                       _=int(i)
+                   except ValueError:
+                       alert_box(text="Please enter integer values", theme=theme)
+                       continue
+
+            
+               d_hour,d_day,d_month,d_year=int(d_hour),int(d_day),int(d_month),int(d_year)
+               hour, day, month, year=time_increment(start_time=(hour, day, month, year), increment=(d_hour,d_day,d_month,d_year))
+            
             window.close()
-            return (text, (hour,day,month,year))
-             
+            return (text, (hour,day,month,year)),pref
+        
+        
+                
+      #  else:
+       #         print(event)
 
 def view_reminders(db, time_data, theme=None):
     sg.theme(theme)
@@ -278,10 +363,10 @@ def view_reminders(db, time_data, theme=None):
                     
                     if len(db.reminders)==0:
                         window["Delete"].update(disabled=True)
-            else:
-                print(event)
+         #   else:
+          #      print(event)
         window.close()         
-    
+        
                 
 def test_window(theme=None):
     sg.theme(theme)

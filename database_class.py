@@ -2,6 +2,8 @@ import pickle
 from random import choice, randint
 import condition_lists as conditions
 from error import error
+from numpy import array
+from os.path import abspath
 ########################################################
 
 class db:
@@ -21,7 +23,7 @@ class db:
               "temperature": choice(conditions.temp)
               } 
         """
-        self.version="v0.8.0"
+        self.version="v0.9.0"
         
         self.day_raw=0
         self.day=1
@@ -37,6 +39,8 @@ class db:
         self.RAW=False
         
         self.reminders=[]
+        self.session_num=1
+      
   
     
     def show_all(self):
@@ -100,6 +104,7 @@ class db:
     
 
 def pickler(path,obj):
+    path=abspath(path)
     outfile = open(path,'wb')
     pickle.dump(obj,outfile)
     outfile.close()
@@ -107,6 +112,7 @@ def pickler(path,obj):
     
 def unpickle(path):
     try:    
+        path=abspath(path)
         infile = open(path,'rb')
         obj = pickle.load(infile)
         infile.close()
@@ -139,12 +145,24 @@ def time_comparison(time0, time1):
     for i in range(len(time0)):
         print(time0[-i-1],time1[-i-1])
         if time0[-i-1]>time1[-i-1]:
-            print(True)
+          #  print(True)
             return True
         elif time0[-i-1]<time1[-i-1]:
-            print(False)
+         #   print(False)
             return False
     print("equal")
     return True
-    
-         
+
+def time_increment(start_time, increment):
+
+    new_time=array(start_time)+array(increment)
+    limits=[24, 30, 12, 1e99]
+    new_time[0]+=1
+    for i in range(len(new_time)-1):
+        limit=limits[i]
+        while new_time[i]>limit:
+            print(0)
+            new_time[i]%=limit
+            new_time[i+1]+=int(new_time[i]/limit)+1
+    new_time[0]-=1   
+    return new_time       

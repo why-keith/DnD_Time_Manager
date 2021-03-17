@@ -1,7 +1,7 @@
 import PySimpleGUI as sg
-from os import startfile, listdir, rename, mkdir, rmdir
+from os import startfile, listdir, rename, mkdir, rmdir, getenv
 from os.path import abspath, exists
-from time import sleep
+#from time import sleep
 from error import error
 import window_layouts as popup
 from database_class import pickler, unpickle, time_comparison
@@ -11,14 +11,21 @@ from tkinter import Tk
 from tkinter.filedialog import askdirectory
 from send2trash import send2trash
 from urllib.request import urlopen
+from sys import exit
 
 
-VERSION="v0.8.0"
+VERSION="v0.9.0"
 
+if exists(".gitignore"):
+    DEV_MODE=True
+else:
+    DEV_MODE=False
+    
+#DEV_MODE=False #OVERRIDE
 
 # Functions--------------------------------------------------------------------
 
-def version_compare(ver):
+def version_compare(ver, current_ver=VERSION):
     """
     Checks with a given version against that of the program
 
@@ -34,16 +41,18 @@ def version_compare(ver):
 
     """
     int_ver=[int(ver[1:].split(".")[i]) for i in range(len(ver[1:].split(".")))]
-    new_int_ver=[int(VERSION[1:].split(".")[i]) for i in range(len(VERSION[1:].split(".")))]
-    
+    new_int_ver=[int(current_ver[1:].split(".")[i]) for i in range(len(current_ver[1:].split(".")))]
+ #   print(int_ver,new_int_ver)
     up_to_date=True
     for i in range(len(int_ver)):
+       # print(int_ver[i],new_int_ver[i])
         if int_ver[i]<new_int_ver[i]:
+            
             up_to_date=False
             break
         elif int_ver[i]>new_int_ver[i]:
             break
-
+    #print(up_to_date)
     return up_to_date
 
 
@@ -81,7 +90,7 @@ def update_db(db):
                 setattr(new_db,i, getattr(db,i)) 
             except Exception as e:
                 error(e)
-                
+    
         if "month_raw" not in attributes:  #fixes introduction of month_raw
             try:
                 new_db.month_raw=db.month[0]-1
@@ -123,54 +132,108 @@ def update_menu():
     
     return menu_dict
 
+def move_files(target_path):
+    from os import remove
+    from shutil import copyfile, copytree, rmtree
+    
+    try:
+        copytree("campaigns",abspath(target_path+"/campaigns"))
+    except Exception as e:
+        error(e)
+        exit()
+        
+    if "campaigns" in listdir(target_path):
+        print("deleting")
+        rmtree("campaigns")
+    else:
+        error(abspath(target_path+"/campaigns")+" was not moved successfully")
+        exit()
+    #------------------------------------------
+    try:
+        copyfile("pref.pkl", abspath(target_path+"/pref.pkl"))
+    except Exception as e:
+        error(e)
+        exit()
+        
+    if "pref.pkl" in listdir(target_path):
+        print("deleting")
+        remove("pref.pkl")
+    else:
+        error(abspath(target_path+"/pref.pkl")+" was not moved successfully")
+        exit()
+    return
+
+def end_session():
+    log=open("{}/{}.txt".format(camp_dir,campaign), "a")
+    log.write("End of session {} ------------------------------------------------------\n".format(db.session_num))
+    log.close()
+    db.session_num+=1
+    pickler(camp_dir+"/"+campaign+".pkl", db)
 
 # Preferences & campaign loading-----------------------------------------------
-
-if "pref.pkl" in listdir():
-    pref=unpickle("pref.pkl")    
-    for key in default_pref:
-       # print(key)
-        if key not in pref:
-            pref[key]=default_pref[key]
+if DEV_MODE==False:
+    user_area=abspath(getenv('LOCALAPPDATA')+"/JP-Carr/DnD_Time_Manager")
+else:
+    user_area=abspath(getenv('LOCALAPPDATA')+"/JP-Carr/DnD_Time_Manager_DEV")
     
+if exists(user_area)==False: #creates directory for save data
+    mkdir(user_area)
+
+if exists("pref.pkl") or exists("campaigns"):    #moves files from program install location to user area
+    if popup.alert_box(text="Moving campaign and preference files to user area\nFiles will be located at:\n"+user_area, window_name="Moving files", theme="Default")==True:
+        print("moving files...")
+        move_files(user_area)
+    else:
+        print(exists("pref.pkl"),exists("campaigns"))
+        exit()
+
+if "pref.pkl" in listdir(user_area):      #Loads pref file or creates new one
+    pref=unpickle(user_area+"/pref.pkl")    
 else:
     pref=default_pref
     pref["version"]=VERSION
-    pickler("pref.pkl", pref)
+    pickler(user_area+"/pref.pkl", pref)
     print("new pref file created")
+
+#print(pref["version"])
+if pref["version"]!=VERSION:      # updates pref file with any new entries
+    print("updating pref file to "+VERSION)
+    for key in default_pref:
+            if key not in pref:
+                pref[key]=default_pref[key]
+    pref["version"]=VERSION
     
     
-if "campaigns" not in listdir():
-    mkdir("campaigns")
+if "campaigns" not in listdir(user_area):
+    mkdir(user_area+"/campaigns")
     
 campaign=None
-if len(listdir("campaigns"))!=0: #loads most recent possible campaign
+if len(listdir(user_area+"/campaigns"))!=0:    #loads most recent possible campaign
     for i in pref["last campaign"]:
-        if i in listdir("campaigns") and exists("campaigns/{}/{}.pkl".format(i, i)):
+        if i in listdir(user_area+"/campaigns") and exists(user_area+"/campaigns/{}/{}.pkl".format(i, i)):
             campaign=i
             break
         
 if campaign==None:
-    for file in listdir("campaigns"):
-        if exists("campaigns/{}/{}.pkl".format(file, file)):
+    for file in listdir(user_area+"/campaigns"):
+        if exists(user_area+"/campaigns/{}/{}.pkl".format(file, file)):
             campaign=file
-print(campaign)        
-if len(listdir("campaigns"))==0 or campaign==None:
-    campaign=popup.create_campaign(first=True, theme=pref["theme"])
+#print(campaign)        
+if len(listdir(user_area+"/campaigns"))==0 or campaign==None:
+    campaign=popup.create_campaign(user_area ,first=True, theme=pref["theme"])
 
 pref["last campaign"].insert(0, campaign)
 pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
 recent_camps=pref["last campaign"][0:3]
-pickler("pref.pkl", pref)    
+pickler(user_area+"/pref.pkl", pref)    
     
-print(pref["last campaign"])
-print(campaign)  
-camp_dir="campaigns/"+campaign
+#print(pref["last campaign"])
+#print(campaign)  
+camp_dir=abspath(user_area+"/campaigns/"+campaign)
 
   
 db=unpickle(camp_dir+"/"+campaign+".pkl")   
 db=update_db(db)
-
 
 #db.reminders=[]
 
@@ -180,15 +243,16 @@ sg.theme(pref["theme"])
 QT_ENTER_KEY1 =  'special 16777220'
 QT_ENTER_KEY2 =  'special 16777221'
 focused_enter=None
+restart=False
 
 menu_dict=update_menu()
-
+#print(pref["show_tenday"])
 main_layout=[
         [sg.Menu([[i,menu_dict[i]] for i in menu_dict], visible=False, key="menu_bar")],
         
         [sg.Text("Time")],
        
-        [sg.InputText("{}:00".format(db.hour),size=(6,1), readonly=True,key="hour_display", tooltip="Time - 24 hour"),   sg.InputText(db.day, size=(3,1), readonly=True,key="day_display", tooltip="Day of the month"),   sg.InputText(db.tenday, size=(2,1), readonly=True,key="tenday_display", tooltip="Tenday"),   sg.InputText("{}. {}".format(db.month[0],db.month[1]), size=(30,1), readonly=True,key="month_display", tooltip="Month"),   sg.InputText(db.year, size=(5,1), readonly=True,key="year_display", tooltip="Year - DR")],
+        [sg.InputText("{}:00".format(db.hour),size=(6,1), readonly=True,key="hour_display", tooltip="Time - 24 hour"),   sg.InputText(db.day, size=(3,1), readonly=True,key="day_display", tooltip="Day of the month"),   sg.InputText(db.tenday, size=(2,1), readonly=True,key="tenday_display", tooltip="Tenday", visible=pref["show_tenday"]),   sg.InputText("{}. {}".format(db.month[0],db.month[1]), size=(30,1), readonly=True,key="month_display", tooltip="Month"),   sg.InputText(db.year, size=(5,1), readonly=True,key="year_display", tooltip="Year - DR")],
         
         [sg.Text("Temperature"), sg.InputText(db.temperature, size=(20,1), readonly=True,key="temp_display"), sg.Text("Precipitation"), sg.InputText(db.precipitation, size=(6,1), readonly=True,key="precip_display")],
         
@@ -196,15 +260,20 @@ main_layout=[
        
         [sg.HorizontalSeparator( pad=((0,0),(8,4)))],
        
-        [sg.Text("Time Adjustment"), sg.InputText("0", size=(5,1), key="hour_input", tooltip="Hour Change"), sg.InputText("0", size=(5,1), key="day_input", tooltip="Day Change"), sg.Button("Submit")],
+        [sg.Text("Time Adjustment"), sg.InputText("0", size=(5,1), key="hour_input", tooltip="Hour Change"), sg.InputText("0", size=(5,1), key="day_input", tooltip="Day Change"), sg.Button("Submit"), sg.VerticalSeparator(color="gray", ),  sg.Button("End Session")],
         
         [sg.InputText(size=(40,1), key="log_input", tooltip="Log Input"), sg.Button("Log"), sg.VerticalSeparator(color="gray"), sg.Button("Open Log")]
         ]
 
 updatable=["hour_display", "day_display", "tenday_display", "month_display", "year_display"]+["temp_display", "precip_display"]+["WS_display", "WD_display"]
-print("///////////////////////////////////")
-window=sg.Window("D&D Time Manager - "+campaign, main_layout, finalize=True, icon="dnd_logo.ico", return_keyboard_events=True)
-print("///////////////////////////////////")
+
+if DEV_MODE==False:
+    window_title="D&D Time Manager - "+campaign
+else:
+    window_title="DEV - D&D Time Manager - "+campaign
+print("-----------------------------------")
+window=sg.Window(window_title, main_layout, finalize=True, icon="dnd_logo.ico", return_keyboard_events=True)
+print("-----------------------------------")
 
 # Event loop-------------------------------------------------------------------
 
@@ -286,17 +355,19 @@ while True:
             db.reminders.remove(i)
         print(db.reminders)
         
+    elif event == "End Session":
+        end_session()     
         
 # Menu Events -----------------------------------------------------------------
     
     # File --------------------------------------------------------------------
     elif event.endswith("::new_campaign"):
         old_campaign=campaign
-        campaign=popup.create_campaign(first=False, theme=pref["theme"])
+        campaign=popup.create_campaign(user_area, first=False, theme=pref["theme"])
         
         if campaign!=None:
             print(campaign)
-            camp_dir="campaigns/"+campaign
+            camp_dir=abspath(user_area+"/campaigns/"+campaign)
             for file in listdir(camp_dir):
                     if file.endswith(".pkl"):
                         campaign=file.split(".")[0]
@@ -314,7 +385,7 @@ while True:
             pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
 
             update_menu()
-            pickler("pref.pkl", pref)
+            pickler(user_area+"/pref.pkl", pref)
 
         else:
             campaign=old_campaign
@@ -323,68 +394,75 @@ while True:
     elif event.endswith("::open_campaign"):
         Tk().withdraw()
         try:
-            path=askdirectory(initialdir=abspath("")+"/campaigns")#, title='Please select a directory')
+            path=askdirectory(initialdir=user_area+"/campaigns")#, title='Please select a directory')
+        
         except Exception as e:
             print("Invalid Folder Path\n")
             print(e)
             pass
         
-        else:
-            print(path)
-            try:
-                for file in listdir(path):
-                    if file.endswith(".pkl"):
-                        campaign=file.split(".")[0]
-                        camp_dir="campaigns/"+campaign
-                        db=unpickle(path+"/"+file) 
-                        db=update_db(db)
-                        update_values=["{}:00".format(db.hour), db.day, db.tenday, "{}. {}".format(db.month[0],db.month[1]), db.year]+[db.temperature, db.precipitation]+[db.windspeed, db.wind_dir]
-                        break
-            except Exception as e:
-                error(e)
-            
-            else:        
-                for i in range(len(updatable)):
-                    window[updatable[i]].Update(update_values[i])
-                window.set_title("D&D Time Manager - "+campaign)
-                window["hour_input"].Update("0")
-                window["day_input"].Update("0")
-                window["log_input"].Update("")
-                
-                pref["last campaign"].insert(0, campaign)
-                pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
-
-                update_menu()
-                pickler("pref.pkl", pref)
-            
+      #  else:
+      #  print(path)
         if path=="":
-            print("Invalid Folder Path\n")
-            pass
+              print("Invalid Folder Path\n")
+              continue
+
+        try:
+            for file in listdir(path):
+                print(file)
+                if file.endswith(".pkl"):
+                    print(file)
+                    campaign=file.split(".")[0]
+                    camp_dir=abspath(user_area+"/campaigns/"+campaign)
+                    db=unpickle(path+"/"+file) 
+                    db=update_db(db)
+                    update_values=["{}:00".format(db.hour), db.day, db.tenday, "{}. {}".format(db.month[0],db.month[1]), db.year]+[db.temperature, db.precipitation]+[db.windspeed, db.wind_dir]
+                    break
+        except Exception as e:
+            error(e)
+        
+        else:        
+            for i in range(len(updatable)):
+                window[updatable[i]].Update(update_values[i])
+            window.set_title("D&D Time Manager - "+campaign)
+            window["hour_input"].Update("0")
+            window["day_input"].Update("0")
+            window["log_input"].Update("")
+            
+            pref["last campaign"].insert(0, campaign)
+            pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
+
+            update_menu()
+            pickler(user_area+"/pref.pkl", pref)
+            
+        
 
     elif event.endswith("::rename_campaign"):
         
         new_campaign=popup.rename_window(campaign, theme=pref["theme"])
         if new_campaign!=None:
             try:
-                mkdir(r"campaigns/{}".format(new_campaign))
+                mkdir(user_area+r"/campaigns/{}".format(new_campaign))
                 for file in listdir(camp_dir):
                     file_type=file.split(".")[-1]
-                    rename(r"{}/{}".format(camp_dir,file), r"campaigns/{}/{}.{}".format(new_campaign,new_campaign,file_type))
+                    rename(r"{}/{}".format(camp_dir,file), user_area+r"/campaigns/{}/{}.{}".format(new_campaign,new_campaign,file_type))
+            except FileExistsError as e:
+                popup.alert_box(text="Capaign \"{}\" already exists".format(new_campaign), theme=pref["theme"])
             except Exception as e:
-                popup.alert_box(text="Unable to rename capaign", theme=pref["theme"])
+                popup.alert_box(text="Unable to rename campaign", theme=pref["theme"])
                 print(e)
             else:
                 rmdir(camp_dir)
                 old_campaign=campaign
                 campaign=new_campaign
-                camp_dir="campaigns/"+campaign
+                camp_dir=abspath(user_area+"/campaigns/"+campaign)
                 window.set_title("D&D Time Manager - "+campaign)
                 pref["last campaign"].insert(0, campaign)
                 pref["last campaign"].remove(old_campaign)
                 pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
 
                 update_menu()
-                pickler("pref.pkl", pref)
+                pickler(user_area+"/pref.pkl", pref)
                 popup.alert_box(text="Rename sucessful", sound=False, window_name="Rename", theme=pref["theme"])
             
             
@@ -394,29 +472,29 @@ while True:
             send2trash(camp_dir)
             pref["last campaign"].remove(campaign)
             popup.alert_box(text="Campaign deleted", sound=False, window_name="Delete Campaign", theme=pref["theme"])
-            if len(listdir("campaigns"))!=0: #loads most recent possible campaign
+            if len(listdir(user_area+"/campaigns"))!=0: #loads most recent possible campaign
                 for i in pref["last campaign"]:
-                    if i in listdir("campaigns") and exists("campaigns/{}/{}.pkl".format(i, i)):
+                    if i in listdir(user_area+"/campaigns") and exists(user_area+"/campaigns/{}/{}.pkl".format(i, i)):
                         campaign=i
                         break
                     
             if campaign==None:
-                for file in listdir("campaigns"):
-                    if exists("campaigns/{}/{}.pkl".format(file, file)):
+                for file in listdir(user_area+"/campaigns"):
+                    if exists(user_area+"/campaigns/{}/{}.pkl".format(file, file)):
                         campaign=file
             print(campaign)        
-            if len(listdir("campaigns"))==0 or campaign==None:
-                campaign=popup.create_campaign(first=True, theme=pref["theme"])
+            if len(listdir(user_area+"/campaigns"))==0 or campaign==None:
+                campaign=popup.create_campaign(user_area, first=True, theme=pref["theme"])
             
             pref["last campaign"].insert(0, campaign)
             pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
 
             update_menu()
-            pickler("pref.pkl", pref)    
+            pickler(user_area+"/pref.pkl", pref)    
                 
             print(pref["last campaign"])
             print(campaign)  
-            camp_dir="campaigns/"+campaign            
+            camp_dir=abspath(user_area+"/campaigns/"+campaign)            
             
             window.set_title("D&D Time Manager - "+campaign)
             db=unpickle(camp_dir+"/"+campaign+".pkl") 
@@ -435,41 +513,43 @@ while True:
             pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
 
             update_menu()
-            pickler("pref.pkl", pref)
+            pickler(user_area+"/pref.pkl", pref)
             
        
     elif event.endswith("::save_directory"):
-        startfile("campaigns")
+        startfile(user_area+"/campaigns")
     
     
     elif event.endswith("::preferences"):
-        new_pref, save_pref, raw_weather = popup.pref_window(pref, theme=pref["theme"], using_RAW=db.RAW)
-        if save_pref==True:
+        new_pref, save, db = popup.pref_window(pref, db, theme=pref["theme"])
+        if save==True:
             pref=new_pref
-            pickler("pref.pkl", pref)
+            pickler(user_area+"/pref.pkl", pref)
             
-            db.RAW=raw_weather
+       #     db.RAW=raw_weather
             pickler(camp_dir+"/"+campaign+".pkl", db)
-            
+     #       print("tenday -" +str(pref["show_tenday"]))
+
     # Tools--------------------------------------------------------------------
         
     elif event.endswith("::raw_time_out"):
         print(db.day_raw,db.hour)
-        popup.alert_box(text="                   {} hours, {} days\n(This value can be accessed from the error log)".format(db.hour,db.day_raw), window_name="Raw Time", sound=False, theme=pref["theme"])
+        popup.alert_box(text="{} hours, {} days\n(This value can be accessed from the error log)".format(db.hour,db.day_raw), window_name="Raw Time", sound=False, theme=pref["theme"])
         error("Raw time request - {} hours, {} days".format(db.hour,db.day_raw), sound=False)
 
     elif event.endswith("::set_reminder"):
         time_data=(window["hour_display"].get(), window["day_display"].get(), window["month_display"].get(), window["year_display"].get() )
-        remind_data=popup.set_reminder(time_data, theme=pref["theme"])
+        remind_data,pref=popup.set_reminder(time_data, pref, theme=pref["theme"])
         if remind_data !=False:
             db.reminders.append(remind_data)
             pickler(camp_dir+"/"+campaign+".pkl", db)
+            pickler("pref.pkl", pref)
             print(db.reminders)
             
     elif event.endswith("::view_reminders"):
         time_data=(window["hour_display"].get(), window["day_display"].get(), window["month_display"].get(), window["year_display"].get() )
         if popup.view_reminders(db, time_data, theme=pref["theme"])=="set_reminder":
-            remind_data=popup.set_reminder(time_data, theme=pref["theme"])
+            remind_data, pref=popup.set_reminder(time_data, pref, theme=pref["theme"])
             if remind_data !=False:
                 db.reminders.append(remind_data)
                 print(db.reminders)
@@ -478,7 +558,10 @@ while True:
     # Help---------------------------------------------------------------------    
 
     elif event.endswith("::about"):
-        about_text="D&D Time Manager\n    Version: {}".format(VERSION)
+        if DEV_MODE==False:
+            about_text="D&D Time Manager\nVersion: {}".format(VERSION)
+        else:
+            about_text="D&D Time Manager\nVersion: {} - DEV".format(VERSION)
         popup.alert_box(text=about_text, window_name="About", button_text="Close", sound=False, theme=pref["theme"])
     
     
@@ -509,9 +592,9 @@ while True:
            # print(0)
             
             try:
-                for file in listdir("campaigns/"+event):
+                for file in listdir(user_area+"/campaigns/"+event):
                     if file.endswith(".pkl"):
-                        camp_dir="campaigns/"+event
+                        camp_dir=abspath(user_area+"/campaigns/"+event)
                         campaign=file.split(".")[0]
                         db=unpickle(camp_dir+"/"+file) 
                         db=update_db(db)
@@ -537,13 +620,15 @@ while True:
                 pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
 
                 update_menu()
-                pickler("pref.pkl", pref)
+                pickler(user_area+"/pref.pkl", pref)
     
   #  else:
    #     print (event)  
 
 # End of loop------------------------------------------------------------------
-       
+if pref["end_session_on_close"]==True and DEV_MODE==False:
+    end_session()
+
 pref["theme"]=pref["new_theme"]   
-pickler("pref.pkl", pref)
+pickler(user_area+"/pref.pkl", pref)
 window.close()
