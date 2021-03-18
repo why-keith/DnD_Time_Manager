@@ -2,7 +2,7 @@
 D&D Time Manager is a simple application created for Microsoft Windows to allow Dungeon Masters to keep track of in-game events and the times at which they occurred. It also automates the rolling of local weather conditions as outlined in ch. 5 of the Dungeon Master's Guide (with a few small tweaks).
 
 ## Installation
-At present D&DTM is only available as a standalone .zip archive for Microsoft Windows. Download the [Latest Release](https://github.com/JP-Carr/DnD_Time_Manager/releases/latest), simply unzip the archive in your chosen directory and you're good to go. If you are updating from and old version of D&DTM, ensure you do not erase/overwrite your database (db.pkl) and your log file (log.txt) unless you want a fresh install.
+At present D&DTM is only available as a standalone .zip archive for Microsoft Windows. Download the [Latest Release](https://github.com/JP-Carr/DnD_Time_Manager/releases/latest), simply unzip the archive in your chosen directory and you're good to go. If you are updating from v0.8.0 or older, ensure you do not erase/overwrite your campaign and preference files (pref.pkl) unless you want a fresh install.
 
 ## Usage
 To start the program, run "DnD_Time_Manager.exe". This will present you with the app's GUI:
