@@ -294,8 +294,11 @@ print("-----------------------------------")
 # Event loop-------------------------------------------------------------------
 
 while True:
+    position=window.current_location()
+    
     event, values = window.read()
     focused_enter=None
+    
     
     if event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
        
@@ -307,22 +310,29 @@ while True:
   
     
     if event == sg.WIN_CLOSED:    #breaks loop if window is closed
+   #     position=0
         break
     
     elif event=="Log" or focused_enter=="log":    #submits log 
         
-        try:
-            log=open("{}/{}.txt".format(camp_dir,campaign), "a")
-            log.write("{} {}/{}/{} - {}\n".format(str(db.hour)+":00", db.day, db.month[0], db.year, window["log_input"].Get()))
+        if window["log_input"].Get() not in (""," ","  "):
             
-            log.close()    
+    
+            try:
+                log=open("{}/{}.txt".format(camp_dir,campaign), "a")
+                log.write("{} {}/{}/{} - {}\n".format(str(db.hour)+":00", db.day, db.month[0], db.year, window["log_input"].Get()))
+                
+                log.close()    
+                window["log_input"].Update("")
+                
+            except PermissionError as e:
+                error("Unable to print to {}.txt - PermissionError".format(campaign))
+                
+            except Exception as e:
+                error("Unable to print to {}.txt - ".format(campaign)+str(e))
+                
+        else:
             window["log_input"].Update("")
-            
-        except PermissionError as e:
-            error("Unable to print to {}.txt - PermissionError".format(campaign))
-            
-        except Exception as e:
-            error("Unable to print to {}.txt".format(campaign)+str(e))
             
             
     elif event == "Open Log":  #opens log file
@@ -339,7 +349,7 @@ while True:
             except Exception as e2:
                 error("Unable to create {}.txt".format(campaign)+str(e2))
     
-    elif event == "Submit" or focused_enter=="time":  #Sumbits changes to database time and updates day conditions
+    elif event == "Submit" or focused_enter=="time":  #Submits changes to database time and updates day conditions
         
         
         try:
@@ -348,7 +358,7 @@ while True:
         except:
             print("INVALID ENTRY")
             error("Invalid time input \"{}, {}\" detected".format(window["hour_input"].Get(),window["day_input"].Get()))
-            pass
+            continue
         else:
             db.change_hour(h)
             db.change_day(d)
@@ -365,7 +375,7 @@ while True:
             print(i[0])
             if time_comparison(db.time_data(),i[1]):
                 to_remove.append(i)
-                popup.alert_box(text=i[0], window_name="Reminder", theme=pref["theme"])
+                popup.alert_box(text=i[0], window_name="Reminder", theme=pref["theme"], position=position)
         for i in to_remove:
             print("removing "+i[0])
             db.reminders.remove(i)
@@ -379,7 +389,7 @@ while True:
     # File --------------------------------------------------------------------
     elif event.endswith("::new_campaign"):
         old_campaign=campaign
-        campaign=popup.create_campaign(user_area, first=False, theme=pref["theme"])
+        campaign=popup.create_campaign(user_area, first=False, theme=pref["theme"], position=position)
         
         if campaign!=None:
             print(campaign)
@@ -455,7 +465,7 @@ while True:
 
     elif event.endswith("::rename_campaign"):
         
-        new_campaign=popup.rename_window(campaign, theme=pref["theme"])
+        new_campaign=popup.rename_window(campaign, theme=pref["theme"], position=position)
         if new_campaign!=None:
             try:
                 mkdir(user_area+r"/campaigns/{}".format(new_campaign))
@@ -463,9 +473,9 @@ while True:
                     file_type=file.split(".")[-1]
                     rename(r"{}/{}".format(camp_dir,file), user_area+r"/campaigns/{}/{}.{}".format(new_campaign,new_campaign,file_type))
             except FileExistsError as e:
-                popup.alert_box(text="Capaign \"{}\" already exists".format(new_campaign), theme=pref["theme"])
+                popup.alert_box(text="Capaign \"{}\" already exists".format(new_campaign), theme=pref["theme"], position=position)
             except Exception as e:
-                popup.alert_box(text="Unable to rename campaign", theme=pref["theme"])
+                popup.alert_box(text="Unable to rename campaign", theme=pref["theme"], position=position)
                 print(e)
             else:
                 rmdir(camp_dir)
@@ -479,15 +489,15 @@ while True:
 
                 update_menu()
                 pickler(user_area+"/pref.pkl", pref)
-                popup.alert_box(text="Rename sucessful", sound=False, window_name="Rename", theme=pref["theme"])
+                popup.alert_box(text="Rename sucessful", sound=False, window_name="Rename", theme=pref["theme"], position=position)
             
             
             
     elif event.endswith("::delete_campaign"):
-        if popup.choice_box(text="Are you sure you want to delete campaign \"{}\"?".format(campaign), window_name="Delete Campaign", theme=pref["theme"])==True:
+        if popup.choice_box(text="Are you sure you want to delete campaign \"{}\"?".format(campaign), window_name="Delete Campaign", theme=pref["theme"], position=position)==True:
             send2trash(camp_dir)
             pref["last campaign"].remove(campaign)
-            popup.alert_box(text="Campaign deleted", sound=False, window_name="Delete Campaign", theme=pref["theme"])
+            popup.alert_box(text="Campaign deleted", sound=False, window_name="Delete Campaign", theme=pref["theme"], position=position)
             if len(listdir(user_area+"/campaigns"))!=0: #loads most recent possible campaign
                 for i in pref["last campaign"]:
                     if i in listdir(user_area+"/campaigns") and exists(user_area+"/campaigns/{}/{}.pkl".format(i, i)):
@@ -500,7 +510,7 @@ while True:
                         campaign=file
             print(campaign)        
             if len(listdir(user_area+"/campaigns"))==0 or campaign==None:
-                campaign=popup.create_campaign(user_area, first=True, theme=pref["theme"])
+                campaign=popup.create_campaign(user_area, first=True, theme=pref["theme"], position=position)
             
             pref["last campaign"].insert(0, campaign)
             pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
@@ -537,7 +547,7 @@ while True:
     
     
     elif event.endswith("::preferences"):
-        new_pref, save, db = popup.pref_window(pref, db, theme=pref["theme"])
+        new_pref, save, db = popup.pref_window(pref, db, theme=pref["theme"], position=position)
         if save==True:
             pref=new_pref
             pickler(user_area+"/pref.pkl", pref)
@@ -545,17 +555,18 @@ while True:
        #     db.RAW=raw_weather
             pickler(camp_dir+"/"+campaign+".pkl", db)
      #       print("tenday -" +str(pref["show_tenday"]))
+            
 
     # Tools--------------------------------------------------------------------
         
     elif event.endswith("::raw_time_out"):
         print(db.day_raw,db.hour)
-        popup.alert_box(text="{} hours, {} days\n(This value can be accessed from the error log)".format(db.hour,db.day_raw), window_name="Raw Time", sound=False, theme=pref["theme"])
+        popup.alert_box(text="{} hours, {} days\n(This value can be accessed from the error log)".format(db.hour,db.day_raw), window_name="Raw Time", sound=False, theme=pref["theme"], position=position)
         error("Raw time request - {} hours, {} days".format(db.hour,db.day_raw), sound=False)
 
     elif event.endswith("::set_reminder"):
         time_data=(window["hour_display"].get(), window["day_display"].get(), window["month_display"].get(), window["year_display"].get() )
-        remind_data,pref=popup.set_reminder(time_data, pref, theme=pref["theme"])
+        remind_data,pref=popup.set_reminder(time_data, pref, theme=pref["theme"], position=position)
         if remind_data !=False:
             db.reminders.append(remind_data)
             pickler(camp_dir+"/"+campaign+".pkl", db)
@@ -564,8 +575,8 @@ while True:
             
     elif event.endswith("::view_reminders"):
         time_data=(window["hour_display"].get(), window["day_display"].get(), window["month_display"].get(), window["year_display"].get() )
-        if popup.view_reminders(db, time_data, theme=pref["theme"])=="set_reminder":
-            remind_data, pref=popup.set_reminder(time_data, pref, theme=pref["theme"])
+        if popup.view_reminders(db, time_data, theme=pref["theme"], position=position)=="set_reminder":
+            remind_data, pref=popup.set_reminder(time_data, pref, theme=pref["theme"], position=position)
             if remind_data !=False:
                 db.reminders.append(remind_data)
                 print(db.reminders)
@@ -578,7 +589,7 @@ while True:
             about_text="D&D Time Manager\nVersion: {}".format(VERSION)
         else:
             about_text="D&D Time Manager\nVersion: {} - DEV".format(VERSION)
-        popup.alert_box(text=about_text, window_name="About", button_text="Close", sound=False, theme=pref["theme"])
+        popup.alert_box(text=about_text, window_name="About", button_text="Close", sound=False, theme=pref["theme"], position=position)
     
     
     elif event.endswith("::readme"):
@@ -595,7 +606,7 @@ while True:
             _=urlopen("https://github.com/")
             
         except:
-            popup.alert_box(text="Unable to reach github.com")
+            popup.alert_box(text="Unable to reach github.com", theme=pref["theme"], position=position)
             
         else:
             startfile("https://github.com/JP-Carr/DnD_Time_Manager")  
@@ -619,7 +630,7 @@ while True:
             except FileNotFoundError:
                 pref["last campaign"].remove(event)
                 update_menu()
-                popup.alert_box("Unable to load campaign \"{}\"".format(event), theme=pref["theme"])
+                popup.alert_box("Unable to load campaign \"{}\"".format(event), theme=pref["theme"], position=position)
                 
             except Exception as e:
                 error(e)
@@ -647,4 +658,5 @@ if pref["end_session_on_close"]==True and DEV_MODE==False:
 
 pref["theme"]=pref["new_theme"]   
 pickler(user_area+"/pref.pkl", pref)
+
 window.close()
