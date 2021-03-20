@@ -14,6 +14,7 @@ from urllib.request import urlopen
 from sys import exit
 from os import remove
 from shutil import copyfile, copytree, rmtree
+import aux_functions as aux
 
 
 VERSION="v0.9.0"
@@ -278,7 +279,7 @@ main_layout=[
        
         [sg.Text("Time Adjustment"), sg.InputText("0", size=(5,1), key="hour_input", tooltip="Hour Change"), sg.InputText("0", size=(5,1), key="day_input", tooltip="Day Change"), sg.Button("Submit"), sg.VerticalSeparator(color="gray", ),  sg.Button("End Session")],
         
-        [sg.InputText(size=(40,1), key="log_input", tooltip="Log Input"), sg.Button("Log"), sg.VerticalSeparator(color="gray"), sg.Button("Open Log")]
+        [sg.InputText(size=(40,1), key="log_input", tooltip="Log Input"), sg.Button("Log"), sg.VerticalSeparator(color="gray"), sg.Button("Open Log")],
         ]
 
 updatable=["hour_display", "day_display", "tenday_display", "month_display", "year_display"]+["temp_display", "precip_display"]+["WS_display", "WD_display"]
@@ -287,18 +288,24 @@ if DEV_MODE==False:
     window_title="D&D Time Manager - "+campaign
 else:
     window_title="DEV - D&D Time Manager - "+campaign
+
 print("-----------------------------------")
 window=sg.Window(window_title, main_layout, finalize=True, icon="dnd_logo.ico", return_keyboard_events=True)
 print("-----------------------------------")
+size=window.size
+position=window.current_location()
 
 # Event loop-------------------------------------------------------------------
 
 while True:
-    position=window.current_location()
+
     
     event, values = window.read()
+  #  print(event)
     focused_enter=None
-    
+    if event!=None:
+        position=window.current_location()
+        centre=aux.window_centre(position, size)
     
     if event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
        
@@ -310,7 +317,6 @@ while True:
   
     
     if event == sg.WIN_CLOSED:    #breaks loop if window is closed
-   #     position=0
         break
     
     elif event=="Log" or focused_enter=="log":    #submits log 
@@ -375,7 +381,9 @@ while True:
             print(i[0])
             if time_comparison(db.time_data(),i[1]):
                 to_remove.append(i)
-                popup.alert_box(text=i[0], window_name="Reminder", theme=pref["theme"], position=position)
+                window.disable()
+                popup.alert_box(text=i[0], window_name="Reminder", theme=pref["theme"], par_centre=centre)
+                window.enable()
         for i in to_remove:
             print("removing "+i[0])
             db.reminders.remove(i)
@@ -389,7 +397,9 @@ while True:
     # File --------------------------------------------------------------------
     elif event.endswith("::new_campaign"):
         old_campaign=campaign
-        campaign=popup.create_campaign(user_area, first=False, theme=pref["theme"], position=position)
+        window.disable()
+        campaign=popup.create_campaign(user_area, first=False, theme=pref["theme"], par_centre=centre)
+        window.enable()
         
         if campaign!=None:
             print(campaign)
@@ -464,8 +474,10 @@ while True:
         
 
     elif event.endswith("::rename_campaign"):
+        window.disable()
+        new_campaign=popup.rename_window(campaign, theme=pref["theme"], par_centre=centre)
+        window.enable()
         
-        new_campaign=popup.rename_window(campaign, theme=pref["theme"], position=position)
         if new_campaign!=None:
             try:
                 mkdir(user_area+r"/campaigns/{}".format(new_campaign))
@@ -473,10 +485,14 @@ while True:
                     file_type=file.split(".")[-1]
                     rename(r"{}/{}".format(camp_dir,file), user_area+r"/campaigns/{}/{}.{}".format(new_campaign,new_campaign,file_type))
             except FileExistsError as e:
-                popup.alert_box(text="Capaign \"{}\" already exists".format(new_campaign), theme=pref["theme"], position=position)
+                window.disable()
+                popup.alert_box(text="Capaign \"{}\" already exists".format(new_campaign), theme=pref["theme"], par_centre=centre)
+                window.enable()
             except Exception as e:
-                popup.alert_box(text="Unable to rename campaign", theme=pref["theme"], position=position)
+                window.disable()
+                popup.alert_box(text="Unable to rename campaign", theme=pref["theme"], par_centre=centre)
                 print(e)
+                window.enable()
             else:
                 rmdir(camp_dir)
                 old_campaign=campaign
@@ -489,15 +505,19 @@ while True:
 
                 update_menu()
                 pickler(user_area+"/pref.pkl", pref)
-                popup.alert_box(text="Rename sucessful", sound=False, window_name="Rename", theme=pref["theme"], position=position)
-            
+                window.disable()
+                popup.alert_box(text="Rename sucessful", sound=False, window_name="Rename", theme=pref["theme"], par_centre=centre)
+                window.enable()
             
             
     elif event.endswith("::delete_campaign"):
-        if popup.choice_box(text="Are you sure you want to delete campaign \"{}\"?".format(campaign), window_name="Delete Campaign", theme=pref["theme"], position=position)==True:
+        if popup.choice_box(text="Are you sure you want to delete campaign \"{}\"?".format(campaign), window_name="Delete Campaign", theme=pref["theme"], par_centre=centre)==True:
             send2trash(camp_dir)
             pref["last campaign"].remove(campaign)
-            popup.alert_box(text="Campaign deleted", sound=False, window_name="Delete Campaign", theme=pref["theme"], position=position)
+            window.disable()
+            popup.alert_box(text="Campaign deleted", sound=False, window_name="Delete Campaign", theme=pref["theme"], par_centre=centre)
+            window.enable()
+            
             if len(listdir(user_area+"/campaigns"))!=0: #loads most recent possible campaign
                 for i in pref["last campaign"]:
                     if i in listdir(user_area+"/campaigns") and exists(user_area+"/campaigns/{}/{}.pkl".format(i, i)):
@@ -510,8 +530,10 @@ while True:
                         campaign=file
             print(campaign)        
             if len(listdir(user_area+"/campaigns"))==0 or campaign==None:
-                campaign=popup.create_campaign(user_area, first=True, theme=pref["theme"], position=position)
-            
+                window.disable()
+                campaign=popup.create_campaign(user_area, first=True, theme=pref["theme"], par_centre=centre)
+                window.enable()
+                
             pref["last campaign"].insert(0, campaign)
             pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
 
@@ -547,7 +569,10 @@ while True:
     
     
     elif event.endswith("::preferences"):
-        new_pref, save, db = popup.pref_window(pref, db, theme=pref["theme"], position=position)
+        window.disable()
+        new_pref, save, db = popup.pref_window(pref, db, theme=pref["theme"], par_centre=centre)
+        window.enable()
+        
         if save==True:
             pref=new_pref
             pickler(user_area+"/pref.pkl", pref)
@@ -561,12 +586,17 @@ while True:
         
     elif event.endswith("::raw_time_out"):
         print(db.day_raw,db.hour)
-        popup.alert_box(text="{} hours, {} days\n(This value can be accessed from the error log)".format(db.hour,db.day_raw), window_name="Raw Time", sound=False, theme=pref["theme"], position=position)
+        window.disable()
+        popup.alert_box(text="{} hours, {} days\n(This value can be accessed from the error log)".format(db.hour,db.day_raw), window_name="Raw Time", sound=False, theme=pref["theme"], par_centre=centre)
+        window.enable()
         error("Raw time request - {} hours, {} days".format(db.hour,db.day_raw), sound=False)
 
     elif event.endswith("::set_reminder"):
         time_data=(window["hour_display"].get(), window["day_display"].get(), window["month_display"].get(), window["year_display"].get() )
-        remind_data,pref=popup.set_reminder(time_data, pref, theme=pref["theme"], position=position)
+        window.disable()
+        remind_data,pref=popup.set_reminder(time_data, pref, theme=pref["theme"], par_centre=centre)
+        window.enable()
+        
         if remind_data !=False:
             db.reminders.append(remind_data)
             pickler(camp_dir+"/"+campaign+".pkl", db)
@@ -575,11 +605,13 @@ while True:
             
     elif event.endswith("::view_reminders"):
         time_data=(window["hour_display"].get(), window["day_display"].get(), window["month_display"].get(), window["year_display"].get() )
-        if popup.view_reminders(db, time_data, theme=pref["theme"], position=position)=="set_reminder":
-            remind_data, pref=popup.set_reminder(time_data, pref, theme=pref["theme"], position=position)
+        window.disable()
+        if popup.view_reminders(db, time_data, theme=pref["theme"], par_centre=centre)=="set_reminder":
+            remind_data, pref=popup.set_reminder(time_data, pref, theme=pref["theme"], par_centre=centre)
             if remind_data !=False:
                 db.reminders.append(remind_data)
                 print(db.reminders)
+        window.enable()
         pickler(camp_dir+"/"+campaign+".pkl", db)
     
     # Help---------------------------------------------------------------------    
@@ -589,8 +621,9 @@ while True:
             about_text="D&D Time Manager\nVersion: {}".format(VERSION)
         else:
             about_text="D&D Time Manager\nVersion: {} - DEV".format(VERSION)
-        popup.alert_box(text=about_text, window_name="About", button_text="Close", sound=False, theme=pref["theme"], position=position)
-    
+        window.disable()
+        popup.alert_box(text=about_text, window_name="About", button_text="Close", sound=False, theme=pref["theme"], par_centre=centre)
+        window.enable()
     
     elif event.endswith("::readme"):
         try:
@@ -606,7 +639,10 @@ while True:
             _=urlopen("https://github.com/")
             
         except:
-            popup.alert_box(text="Unable to reach github.com", theme=pref["theme"], position=position)
+            window.disable()
+            popup.alert_box(text="Unable to reach github.com", theme=pref["theme"], par_centre=centre)
+            window.enable()
+            
             
         else:
             startfile("https://github.com/JP-Carr/DnD_Time_Manager")  
@@ -630,7 +666,9 @@ while True:
             except FileNotFoundError:
                 pref["last campaign"].remove(event)
                 update_menu()
-                popup.alert_box("Unable to load campaign \"{}\"".format(event), theme=pref["theme"], position=position)
+                window.disable()
+                popup.alert_box("Unable to load campaign \"{}\"".format(event), theme=pref["theme"], par_centre=centre)
+                window.enable()
                 
             except Exception as e:
                 error(e)
@@ -648,14 +686,16 @@ while True:
 
                 update_menu()
                 pickler(user_area+"/pref.pkl", pref)
-    
+
   #  else:
-   #     print (event)  
+   #     print (event) 
+    window.bring_to_front()
 
 # End of loop------------------------------------------------------------------
 if pref["end_session_on_close"]==True and DEV_MODE==False:
     end_session()
-
+    
+#pref["window_position"]=position
 pref["theme"]=pref["new_theme"]   
 pickler(user_area+"/pref.pkl", pref)
 

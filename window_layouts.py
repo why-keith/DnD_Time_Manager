@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
-#from time import sleep
+from time import sleep
 from os import listdir, mkdir
 from os.path import abspath
 from database_class import db, pickler
@@ -8,21 +8,36 @@ import custom_themes
 import condition_lists
 from database_class import time_increment
 from error import error
+import aux_functions as aux
+from copy import deepcopy
 
 QT_ENTER_KEY1 =  'special 16777220'
 QT_ENTER_KEY2 =  'special 16777221'
 
 icon_path="dnd_logo.ico"
 
-def alert_box(text="TEXT HERE", window_name="ALERT", button_text="OK", sound=True, theme=None, position=(None,None)):
+def window_centre(window,par_centre):
+    size=window.size
+    x,y=aux.TL_from_centre(par_centre, size)
+    if x<0:
+        x=0
+    if y<0:
+        y=0
+    event, values = window.read(timeout = 0)
+    window.move(int(x),int(y))
+    window.reappear()
+
+def alert_box(text="TEXT HERE", window_name="ALERT", button_text="OK", sound=True, theme=None, par_centre=(None,None)):
     lines=text.split("\n")
     
     sg.theme(theme)
     layout=[[sg.Text("  "+lines[i]+"  ")] for i in range(len(lines))]+[
-          #  [sg.Text("  "+text+"  ")],
             [sg.Button(button_text)]
             ]
-    window=sg.Window(window_name, layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=True, return_keyboard_events=True, location=position)
+
+    window=sg.Window(window_name, layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=True, return_keyboard_events=True, alpha_channel=0)
+    window_centre(window,par_centre)
+    
     if sound==True:
         print("\a")
     
@@ -36,13 +51,14 @@ def alert_box(text="TEXT HERE", window_name="ALERT", button_text="OK", sound=Tru
             return True
             
 
-def choice_box(text, window_name="", theme=None, position=(None,None)):
+def choice_box(text, window_name="", theme=None, par_centre=(None,None)):
     sg.theme(theme)
     layout=[
             [sg.Text(text)],
             [sg.Button("Yes"), sg.Button("No")]
             ]
-    window=sg.Window(window_name, layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=True, return_keyboard_events=True, location=position)
+    window=sg.Window(window_name, layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=True, return_keyboard_events=True, alpha_channel=0)
+    window_centre(window,par_centre)
     print("\a")
     
     while True:
@@ -57,7 +73,7 @@ def choice_box(text, window_name="", theme=None, position=(None,None)):
             window.close()
             return True
         
-def create_campaign(user_area, first=False, theme=None, position=(None,None)):
+def create_campaign(user_area, first=False, theme=None, par_centre=(None,None)):
     sg.theme(theme)
     layout=[
             [sg.Text("New Campaign")],
@@ -65,8 +81,9 @@ def create_campaign(user_area, first=False, theme=None, position=(None,None)):
             [sg.Text("Name"), sg.InputText("", size=(25,1), key="campaign_name")],
             [sg.Button("Create")]
             ]
-    window=sg.Window("New...", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False, return_keyboard_events=True, location=position)
-
+    window=sg.Window("New...", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False, return_keyboard_events=True, alpha_channel=0)
+    window_centre(window,par_centre)
+    
     while True:
         event, values = window.read()
         focused_enter=None
@@ -92,7 +109,7 @@ def create_campaign(user_area, first=False, theme=None, position=(None,None)):
             
             try:
                 if name in listdir(abspath(user_area+"/campaigns")):
-                    alert_box(text="Campaign \"{}\" already exists".format(name), theme=theme, position=position)
+                    alert_box(text="Campaign \"{}\" already exists".format(name), theme=theme, par_centre=par_centre)
                     pass
                 else:
                     _dir=abspath(user_area+"/campaigns/{}".format(name))
@@ -105,10 +122,10 @@ def create_campaign(user_area, first=False, theme=None, position=(None,None)):
                     return name
             except Exception as e:
                 error(e)
-                alert_box(text="\"{}\" is not a valid campaign name".format(name), theme=theme, position=position)
+                alert_box(text="\"{}\" is not a valid campaign name".format(name), theme=theme, par_centre=par_centre)
                 pass
                 
-def pref_window(pref, db, theme=None, position=(None,None)):
+def pref_window(pref, db, theme=None, par_centre=(None,None)):
 
     
     sg.theme(theme)
@@ -147,8 +164,9 @@ def pref_window(pref, db, theme=None, position=(None,None)):
             ],
             [sg.Button("Save"), sg.Button("Cancel")],
             ]
-    window=sg.Window("Preferences", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False, location=position)
-  
+    window=sg.Window("Preferences", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False, alpha_channel=0)
+    window_centre(window,par_centre)
+    
     while True:
         event, values = window.read()
         if event == sg.WIN_CLOSED or event=="Cancel":
@@ -160,7 +178,7 @@ def pref_window(pref, db, theme=None, position=(None,None)):
             try:
                 _=int(window["session_num"].get())
             except ValueError:
-                alert_box(text="Please enter a valid session number", theme=theme, position=position)
+                alert_box(text="Please enter a valid session number", theme=theme, par_centre=par_centre)
                 window["session_num"].Update(str(db.session_num))
                 continue
             
@@ -178,7 +196,7 @@ def pref_window(pref, db, theme=None, position=(None,None)):
     return pref, save, db
             
     
-def rename_window(old_name, theme=None, position=(None,None)):
+def rename_window(old_name, theme=None, par_centre=(None,None)):
     sg.theme(theme)
     layout=[
             [sg.Text("Rename Campaign - "+old_name)],
@@ -187,8 +205,9 @@ def rename_window(old_name, theme=None, position=(None,None)):
             [sg.Button("Confirm"), sg.Button("Cancel")]
             ]
     
-    window=sg.Window("Rename", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False, return_keyboard_events=True, location=position)
-  
+    window=sg.Window("Rename", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False, return_keyboard_events=True, alpha_channel=0)
+    window_centre(window,par_centre)
+    
     while True:
         event, values = window.read()
         
@@ -212,11 +231,11 @@ def rename_window(old_name, theme=None, position=(None,None)):
                 return name
             else:
                 if name in listdir():                 
-                    alert_box(text="Campaign \"{}\" already exists".format(name), theme=theme, position=position)
+                    alert_box(text="Campaign \"{}\" already exists".format(name), theme=theme, par_centre=par_centre)
                     pass
                 
                 
-def set_reminder(time_data, pref, theme=None, position=(None,None)): 
+def set_reminder(time_data, pref, theme=None, par_centre=(None,None)): 
     sg.theme(theme)
     
     hour, day, month, year=time_data
@@ -237,8 +256,9 @@ def set_reminder(time_data, pref, theme=None, position=(None,None)):
             [sg.Button("Confirm"), sg.Button("Cancel")],
             ]
     
-    window=sg.Window("Set Reminder", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True, disable_minimize=False, return_keyboard_events=True, location=position)
-
+    window=sg.Window("Set Reminder", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True, disable_minimize=False, return_keyboard_events=True, alpha_channel=0)
+    window_centre(window,par_centre)
+    
     if radio_date==True:
         for j in ("hour_input","day_input","month_input","year_input"):
             window[j].update(disabled=True)
@@ -295,7 +315,7 @@ def set_reminder(time_data, pref, theme=None, position=(None,None)):
                    try:
                        _=int(i)
                    except ValueError:
-                       alert_box(text="Please enter integer values", theme=theme, position=position)
+                       alert_box(text="Please enter integer values", theme=theme, par_centre=par_centre)
                        continue
 
             
@@ -310,11 +330,11 @@ def set_reminder(time_data, pref, theme=None, position=(None,None)):
       #  else:
        #         print(event)
 
-def view_reminders(db, time_data, theme=None, position=(None,None)):
+def view_reminders(db, time_data, theme=None, par_centre=(None,None)):
     sg.theme(theme)
     
     if db.reminders==[]:
-        if choice_box("No reminders found. Would you like to create one?", window_name="Alert", theme=theme, position=position)==True:
+        if choice_box("No reminders found. Would you like to create one?", window_name="Alert", theme=theme, par_centre=par_centre)==True:
             return "set_reminder"
         else:
             return
@@ -340,8 +360,9 @@ def view_reminders(db, time_data, theme=None, position=(None,None)):
                 [sg.Button("Delete", disabled=True)]
                 ]
         
-        window=sg.Window("View Reminders", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False, location=position)
-      
+        window=sg.Window("View Reminders", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False, alpha_channel=0)
+        window_centre(window,par_centre)
+        
         while True:
             event, values = window.read()
             if event == sg.WIN_CLOSED:
@@ -368,7 +389,7 @@ def view_reminders(db, time_data, theme=None, position=(None,None)):
         window.close()         
         
                 
-def test_window(theme=None, position=(None,None)):
+def test_window(theme=None, par_centre=(None,None)):
     sg.theme(theme)
   #  c1=[sg.Button("Confirm"), sg.Button("Cancel")]
     layout=[
@@ -377,18 +398,27 @@ def test_window(theme=None, position=(None,None)):
             [sg.Text("New name"), sg.InputText("", size=(25,1), key="campaign_name")],
             #[sg.Button("Confirm"), sg.Button("Cancel")],
             [sg.Listbox(["aaaaa","bbbbb","ccccc","ddddd","eeeee","fffff","ggggg","hhhhh"], size=(15,6), key="list")],
-            [sg.Button("x")]
+            [sg.Button("x"),sg.Button("y")]
             ]
     
-    window=sg.Window("Preferences", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False, location=position)
-  
+    window=sg.Window("Preferences", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False, alpha_channel=0)
+    window_centre(window,par_centre)
+    #event, values = window.read(timeout = 0)
+    window.move(0,0)
+    #sleep(1)
+  #  window.reappear()
+    i,j=0,0
     while True:
+        
         event, values = window.read() 
         if event == sg.WIN_CLOSED:
             break
         elif event=="x":
-           print( window["tab"].read())
+           window.move(i,j)
+           i+=20
+           j+=20
+           
     window.close()
     
 if __name__=="__main__":  
-    test_window(position=(-10,-5))
+    test_window(par_centre=(-10,-5))
