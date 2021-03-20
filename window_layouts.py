@@ -49,7 +49,7 @@ def alert_box(text="TEXT HERE", window_name="ALERT", button_text="OK", sound=Tru
         elif event==button_text or event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
             window.close()
             return True
-            
+        window.bring_to_front()    
 
 def choice_box(text, window_name="", theme=None, par_centre=(None,None)):
     sg.theme(theme)
@@ -72,6 +72,7 @@ def choice_box(text, window_name="", theme=None, par_centre=(None,None)):
         elif event=="Yes" or event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
             window.close()
             return True
+        window.bring_to_front()
         
 def create_campaign(user_area, first=False, theme=None, par_centre=(None,None)):
     sg.theme(theme)
@@ -128,7 +129,8 @@ def create_campaign(user_area, first=False, theme=None, par_centre=(None,None)):
                 alert_box(text="\"{}\" is not a valid campaign name".format(name), theme=theme, par_centre=par_centre)
                 window.enable()
                 pass
-                
+        window.bring_to_front()
+         
 def pref_window(pref, db, theme=None, par_centre=(None,None)):
 
     
@@ -197,6 +199,7 @@ def pref_window(pref, db, theme=None, par_centre=(None,None)):
             db.RAW=bool(window["RAW_weather"].get())
             db.session_num=int(window["session_num"].get())
             break
+        window.bring_to_front()
         
     window.close()        
     return pref, save, db
@@ -241,7 +244,7 @@ def rename_window(old_name, theme=None, par_centre=(None,None)):
                     alert_box(text="Campaign \"{}\" already exists".format(name), theme=theme, par_centre=par_centre)
                     window.enable()
                     pass
-                
+        window.bring_to_front()       
                 
 def set_reminder(time_data, pref, theme=None, par_centre=(None,None)): 
     sg.theme(theme)
@@ -333,6 +336,7 @@ def set_reminder(time_data, pref, theme=None, par_centre=(None,None)):
             window.close()
             return (text, (hour,day,month,year)),pref
         
+        window.bring_to_front()
         
                 
       #  else:
@@ -376,10 +380,10 @@ def view_reminders(db, time_data, theme=None, par_centre=(None,None)):
             if event == sg.WIN_CLOSED:
                 break
             
-            if event=="list_box" and len(db.reminders)!=0:
+            elif event=="list_box" and len(db.reminders)!=0:
                 window["Delete"].update(disabled=False)
             
-            if event=="Delete":
+            elif event=="Delete":
                 try:
                     index=window["list_box"].GetIndexes()[0]
                 except IndexError:
@@ -394,6 +398,8 @@ def view_reminders(db, time_data, theme=None, par_centre=(None,None)):
                         window["Delete"].update(disabled=True)
          #   else:
           #      print(event)
+            window.bring_to_front()
+            
         window.close()         
         
                 
@@ -425,7 +431,7 @@ def test_window(theme=None, par_centre=(None,None)):
            window.move(i,j)
            i+=20
            j+=20
-           
+        window.bring_to_front()       
     window.close()
     
 if __name__=="__main__":  
