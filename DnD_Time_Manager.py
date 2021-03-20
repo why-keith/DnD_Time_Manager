@@ -17,7 +17,7 @@ from shutil import copyfile, copytree, rmtree
 import aux_functions as aux
 
 
-VERSION="v0.9.0"
+VERSION="v0.10.0"
 
 if exists(".gitignore"):
     DEV_MODE=True
@@ -219,7 +219,7 @@ if pref["version"]!=VERSION:      # updates pref file with any new entries
             if key not in pref:
                 pref[key]=default_pref[key]
     pref["version"]=VERSION
-    
+print(pref["window_position"])  
     
 if "campaigns" not in listdir(user_area):
     mkdir(user_area+"/campaigns")
@@ -290,7 +290,7 @@ else:
     window_title="DEV - D&D Time Manager - "+campaign
 
 print("-----------------------------------")
-window=sg.Window(window_title, main_layout, finalize=True, icon="dnd_logo.ico", return_keyboard_events=True)
+window=sg.Window(window_title, main_layout, finalize=True, icon="dnd_logo.ico", return_keyboard_events=True, location=pref["window_position"])
 print("-----------------------------------")
 size=window.size
 position=window.current_location()
@@ -301,7 +301,7 @@ while True:
 
     
     event, values = window.read()
-  #  print(event)
+
     focused_enter=None
     if event!=None:
         position=window.current_location()
@@ -695,7 +695,7 @@ while True:
 if pref["end_session_on_close"]==True and DEV_MODE==False:
     end_session()
     
-#pref["window_position"]=position
+pref["window_position"]=position
 pref["theme"]=pref["new_theme"]   
 pickler(user_area+"/pref.pkl", pref)
 
