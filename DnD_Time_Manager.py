@@ -646,7 +646,14 @@ while True:
             
         else:
             startfile("https://github.com/JP-Carr/DnD_Time_Manager")  
-     
+
+    # Keyboard shortcuts-------------------------------------------------------
+
+    elif event=="X:88": #ctrl+shift+x
+        print("Exiting & resetting window location")
+        position=(None,None)
+        break
+    
     # Recent campaigns---------------------------------------------------------    
      
     elif event in recent_camps:
@@ -686,10 +693,11 @@ while True:
 
                 update_menu()
                 pickler(user_area+"/pref.pkl", pref)
-
-  #  else:
-   #     print (event) 
-    window.bring_to_front()
+                
+    #else:
+     #   print (event) 
+    
+    window.force_focus()
 
 # End of loop------------------------------------------------------------------
 if pref["end_session_on_close"]==True and DEV_MODE==False:
