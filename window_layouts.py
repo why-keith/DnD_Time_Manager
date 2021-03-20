@@ -109,7 +109,9 @@ def create_campaign(user_area, first=False, theme=None, par_centre=(None,None)):
             
             try:
                 if name in listdir(abspath(user_area+"/campaigns")):
+                    window.disable()
                     alert_box(text="Campaign \"{}\" already exists".format(name), theme=theme, par_centre=par_centre)
+                    window.enable()
                     pass
                 else:
                     _dir=abspath(user_area+"/campaigns/{}".format(name))
@@ -122,7 +124,9 @@ def create_campaign(user_area, first=False, theme=None, par_centre=(None,None)):
                     return name
             except Exception as e:
                 error(e)
+                window.disable()
                 alert_box(text="\"{}\" is not a valid campaign name".format(name), theme=theme, par_centre=par_centre)
+                window.enable()
                 pass
                 
 def pref_window(pref, db, theme=None, par_centre=(None,None)):
@@ -178,7 +182,9 @@ def pref_window(pref, db, theme=None, par_centre=(None,None)):
             try:
                 _=int(window["session_num"].get())
             except ValueError:
+                window.disable()
                 alert_box(text="Please enter a valid session number", theme=theme, par_centre=par_centre)
+                window.enable()
                 window["session_num"].Update(str(db.session_num))
                 continue
             
@@ -230,8 +236,10 @@ def rename_window(old_name, theme=None, par_centre=(None,None)):
                 window.close()
                 return name
             else:
-                if name in listdir():                 
+                if name in listdir(): 
+                    window.disable()
                     alert_box(text="Campaign \"{}\" already exists".format(name), theme=theme, par_centre=par_centre)
+                    window.enable()
                     pass
                 
                 
