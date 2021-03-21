@@ -43,13 +43,18 @@ def alert_box(text="TEXT HERE", window_name="ALERT", button_text="OK", sound=Tru
     
     while True:
         event, values = window.read()
+        wanted_event=True
         if event == sg.WIN_CLOSED:
             window.close()
             return False
         elif event==button_text or event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
             window.close()
             return True
-        window.force_focus()    
+        else:
+            wanted_event=False
+            
+        if wanted_event==True:
+            window.force_focus()    
 
 def choice_box(text, window_name="", theme=None, par_centre=(None,None)):
     sg.theme(theme)
@@ -63,6 +68,7 @@ def choice_box(text, window_name="", theme=None, par_centre=(None,None)):
     
     while True:
         event, values = window.read()
+        wanted_event=True
         if event == sg.WIN_CLOSED:
             window.close()
             return False
@@ -72,7 +78,12 @@ def choice_box(text, window_name="", theme=None, par_centre=(None,None)):
         elif event=="Yes" or event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
             window.close()
             return True
-        window.force_focus()
+        else:
+            wanted_event=False
+            
+        if wanted_event==True:
+            window.force_focus()
+
         
 def create_campaign(user_area, first=False, theme=None, par_centre=(None,None)):
     sg.theme(theme)
@@ -88,6 +99,7 @@ def create_campaign(user_area, first=False, theme=None, par_centre=(None,None)):
     while True:
         event, values = window.read()
         focused_enter=None
+        wanted_event=True
      #   print(event)
         if event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
             active_element=window.FindElementWithFocus()          #Dectects if the enter key has been pressed and checks which element is active
@@ -129,8 +141,12 @@ def create_campaign(user_area, first=False, theme=None, par_centre=(None,None)):
                 alert_box(text="\"{}\" is not a valid campaign name".format(name), theme=theme, par_centre=par_centre)
                 window.enable()
                 pass
-        window.force_focus()
-         
+        else:
+            wanted_event=False
+            
+        if wanted_event==True:
+            window.force_focus()
+               
 def pref_window(pref, db, theme=None, par_centre=(None,None)):
 
     
@@ -175,12 +191,12 @@ def pref_window(pref, db, theme=None, par_centre=(None,None)):
     
     while True:
         event, values = window.read()
+        wanted_event=True
         if event == sg.WIN_CLOSED or event=="Cancel":
             save=False
             break
         
         elif event=="Save":
-            
             try:
                 _=int(window["session_num"].get())
             except ValueError:
@@ -199,7 +215,12 @@ def pref_window(pref, db, theme=None, par_centre=(None,None)):
             db.RAW=bool(window["RAW_weather"].get())
             db.session_num=int(window["session_num"].get())
             break
-        window.force_focus()
+        else:
+            wanted_event=False
+            
+        if wanted_event==True:
+            window.force_focus()
+    
         
     window.close()        
     return pref, save, db
@@ -219,7 +240,7 @@ def rename_window(old_name, theme=None, par_centre=(None,None)):
     
     while True:
         event, values = window.read()
-        
+        wanted_event=True
         focused_enter=None
      #   print(event)
         if event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
@@ -244,7 +265,12 @@ def rename_window(old_name, theme=None, par_centre=(None,None)):
                     alert_box(text="Campaign \"{}\" already exists".format(name), theme=theme, par_centre=par_centre)
                     window.enable()
                     pass
-        window.force_focus()       
+        else:
+            wanted_event=False
+            
+        if wanted_event==True:
+            window.force_focus()
+      
                 
 def set_reminder(time_data, pref, theme=None, par_centre=(None,None)): 
     sg.theme(theme)
@@ -280,6 +306,7 @@ def set_reminder(time_data, pref, theme=None, par_centre=(None,None)):
     while True:
         event, values = window.read()
         focused_enter=None
+        wanted_event=True
         if event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
             active_element=window.FindElementWithFocus()          #Dectects if the enter key has been pressed and checks which element is active
     #        print(active_element)
@@ -336,12 +363,12 @@ def set_reminder(time_data, pref, theme=None, par_centre=(None,None)):
             window.close()
             return (text, (hour,day,month,year)),pref
         
-        window.force_focus()
-        
+        else:
+            wanted_event=False
+            
+        if wanted_event==True:
+            window.force_focus()        
                 
-      #  else:
-       #         print(event)
-
 def view_reminders(db, time_data, theme=None, par_centre=(None,None)):
     sg.theme(theme)
     
@@ -361,10 +388,7 @@ def view_reminders(db, time_data, theme=None, par_centre=(None,None)):
                 list_box_width=len(i)
     
         
-       
-        
-        
-       # print(reminder_list)
+
         layout=[
                 [sg.Text("Reminders")],
                 [sg.HorizontalSeparator(color="gray")],
@@ -377,6 +401,7 @@ def view_reminders(db, time_data, theme=None, par_centre=(None,None)):
         
         while True:
             event, values = window.read()
+            wanted_event=True
             if event == sg.WIN_CLOSED:
                 break
             
@@ -396,10 +421,13 @@ def view_reminders(db, time_data, theme=None, par_centre=(None,None)):
                     
                     if len(db.reminders)==0:
                         window["Delete"].update(disabled=True)
-         #   else:
-          #      print(event)
-            window.force_focus()
+
+            else:
+                wanted_event=False
             
+            if wanted_event==True:
+                window.force_focus()
+                
         window.close()         
         
                 
@@ -425,13 +453,20 @@ def test_window(theme=None, par_centre=(None,None)):
     while True:
         
         event, values = window.read() 
+        wanted_event=True
         if event == sg.WIN_CLOSED:
             break
         elif event=="x":
            window.move(i,j)
            i+=20
            j+=20
-        window.force_focus()       
+        else:
+            wanted_event=False
+            
+        if wanted_event==True:
+            window.force_focus()   
+
+        
     window.close()
     
 if __name__=="__main__":  
