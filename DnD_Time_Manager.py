@@ -219,7 +219,6 @@ if pref["version"]!=VERSION:      # updates pref file with any new entries
             if key not in pref:
                 pref[key]=default_pref[key]
     pref["version"]=VERSION
-print(pref["window_position"])  
     
 if "campaigns" not in listdir(user_area):
     mkdir(user_area+"/campaigns")
@@ -395,7 +394,7 @@ while True:
 # Menu Events -----------------------------------------------------------------
     
     # File --------------------------------------------------------------------
-    elif event.endswith("::new_campaign"):
+    elif event.endswith("::new_campaign") or event=="n:78":
         old_campaign=campaign
         window.disable()
         campaign=popup.create_campaign(user_area, first=False, theme=pref["theme"], par_centre=centre)
@@ -427,7 +426,7 @@ while True:
             campaign=old_campaign
 
 
-    elif event.endswith("::open_campaign"):
+    elif event.endswith("::open_campaign") or event=="o:79":
         Tk().withdraw()
         try:
             path=askdirectory(initialdir=user_area+"/campaigns")#, title='Please select a directory')
@@ -694,8 +693,8 @@ while True:
                 update_menu()
                 pickler(user_area+"/pref.pkl", pref)
                 
-    #else:
-     #   print (event) 
+  #  else:
+   #     print (event) 
     
     window.force_focus()
 
