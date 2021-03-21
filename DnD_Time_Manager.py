@@ -293,6 +293,7 @@ window=sg.Window(window_title, main_layout, finalize=True, icon="dnd_logo.ico", 
 print("-----------------------------------")
 size=window.size
 position=window.current_location()
+window.force_focus()
 
 # Event loop-------------------------------------------------------------------
 
@@ -439,7 +440,7 @@ while True:
       #  else:
       #  print(path)
         if path=="":
-              print("Invalid Folder Path\n")
+            #  print("Invalid Folder Path\n")
               continue
 
         try:
