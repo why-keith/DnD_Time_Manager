@@ -303,6 +303,7 @@ while True:
     event, values = window.read()
 
     focused_enter=None
+    wanted_event=True
     if event!=None:
         position=window.current_location()
         centre=aux.window_centre(position, size)
@@ -533,7 +534,7 @@ while True:
                 window.disable()
                 campaign=popup.create_campaign(user_area, first=True, theme=pref["theme"], par_centre=centre)
                 window.enable()
-                
+            """    
             pref["last campaign"].insert(0, campaign)
             pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
 
@@ -541,7 +542,8 @@ while True:
             pickler(user_area+"/pref.pkl", pref)    
                 
             print(pref["last campaign"])
-            print(campaign)  
+            print(campaign) 
+            """
             camp_dir=abspath(user_area+"/campaigns/"+campaign)            
             
             window.set_title("D&D Time Manager - "+campaign)
@@ -694,10 +696,11 @@ while True:
                 update_menu()
                 pickler(user_area+"/pref.pkl", pref)
                 
-  #  else:
+    else:
+        wanted_event=False
    #     print (event) 
-    
-    window.force_focus()
+    if wanted_event==True:
+        window.force_focus()
 
 # End of loop------------------------------------------------------------------
 if pref["end_session_on_close"]==True and DEV_MODE==False:
