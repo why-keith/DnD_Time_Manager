@@ -142,36 +142,36 @@ def move_files(target_path):
         copytree("campaigns",abspath(target_path+"/campaigns"))
     except Exception as e:
         error(e)
-        exit()
-        
-    if "campaigns" in listdir(target_path):
-        print("deleting")
-        try:
-            rmtree("campaigns")
-        except Exception as e:
-            error(e)
-            deleted=False
-    else:
-        error(abspath(target_path+"/campaigns")+" was not moved successfully")
-        exit()
-        
+     #   exit()
+    else:    
+        if "campaigns" in listdir(target_path):
+            print("deleting")
+            try:
+                rmtree("campaigns")
+            except Exception as e:
+                error(e)
+                deleted=False
+        else:
+            error(abspath(target_path+"/campaigns")+" was not moved successfully")
+          #  exit()
+            
 
     try:
         copyfile("pref.pkl", abspath(target_path+"/pref.pkl"))
     except Exception as e:
         error(e)
-        exit()
-        
-    if "pref.pkl" in listdir(target_path):
-        print("deleting")
-        try:
-            remove("pref.pkl")
-        except Exception as e:
-            error(e)
-            deleted=False
-    else:
-        error(abspath(target_path+"/pref.pkl")+" was not moved successfully")
-        exit()
+     #   exit()
+    else:    
+        if "pref.pkl" in listdir(target_path):
+            print("deleting")
+            try:
+                remove("pref.pkl")
+            except Exception as e:
+                error(e)
+                deleted=False
+        else:
+            error(abspath(target_path+"/pref.pkl")+" was not moved successfully")
+           # exit()
     return deleted
 
 def end_session():
@@ -534,16 +534,7 @@ while True:
                 window.disable()
                 campaign=popup.create_campaign(user_area, first=True, theme=pref["theme"], par_centre=centre)
                 window.enable()
-            """    
-            pref["last campaign"].insert(0, campaign)
-            pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
 
-            update_menu()
-            pickler(user_area+"/pref.pkl", pref)    
-                
-            print(pref["last campaign"])
-            print(campaign) 
-            """
             camp_dir=abspath(user_area+"/campaigns/"+campaign)            
             
             window.set_title("D&D Time Manager - "+campaign)
@@ -659,9 +650,8 @@ while True:
     # Recent campaigns---------------------------------------------------------    
      
     elif event in recent_camps:
-        print(event)
+        #print(event)
         if event!=campaign:
-           # print(0)
             
             try:
                 for file in listdir(user_area+"/campaigns/"+event):
