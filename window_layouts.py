@@ -17,14 +17,15 @@ QT_ENTER_KEY2 =  'special 16777221'
 icon_path="dnd_logo.ico"
 
 def window_centre(window,par_centre):
-    size=window.size
-    x,y=aux.TL_from_centre(par_centre, size)
-    if x<0:
-        x=0
-    if y<0:
-        y=0
-    event, values = window.read(timeout = 0)
-    window.move(int(x),int(y))
+    if par_centre!=(None,None):
+        size=window.size
+        x,y=aux.TL_from_centre(par_centre, size)
+        if x<0:
+            x=0
+        if y<0:
+            y=0
+        event, values = window.read(timeout = 0)
+        window.move(int(x),int(y))
     window.reappear()
 
 def alert_box(text="TEXT HERE", window_name="ALERT", button_text="OK", sound=True, theme=None, par_centre=(None,None)):
