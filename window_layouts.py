@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
-from time import sleep
+#from time import sleep
 from os import listdir, mkdir
 from os.path import abspath
 from database_class import db, pickler
@@ -9,7 +9,6 @@ import condition_lists
 from database_class import time_increment
 from error import error
 import aux_functions as aux
-from copy import deepcopy
 
 QT_ENTER_KEY1 =  'special 16777220'
 QT_ENTER_KEY2 =  'special 16777221'
@@ -36,7 +35,7 @@ def alert_box(text="TEXT HERE", window_name="ALERT", button_text="OK", sound=Tru
             [sg.Button(button_text)]
             ]
 
-    window=sg.Window(window_name, layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=True, return_keyboard_events=True, alpha_channel=0)
+    window=sg.Window(window_name, layout, finalize=True, icon=icon_path, element_justification="center", disable_minimize=True, return_keyboard_events=True, alpha_channel=0)
     window_centre(window,par_centre)
     
     if sound==True:
@@ -63,7 +62,7 @@ def choice_box(text, window_name="", theme=None, par_centre=(None,None)):
             [sg.Text(text)],
             [sg.Button("Yes"), sg.Button("No")]
             ]
-    window=sg.Window(window_name, layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=True, return_keyboard_events=True, alpha_channel=0)
+    window=sg.Window(window_name, layout, finalize=True, icon=icon_path, element_justification="center", disable_minimize=True, return_keyboard_events=True, alpha_channel=0)
     window_centre(window,par_centre)
     print("\a")
     
@@ -94,7 +93,7 @@ def create_campaign(user_area, first=False, theme=None, par_centre=(None,None)):
             [sg.Text("Name"), sg.InputText("", size=(25,1), key="campaign_name")],
             [sg.Button("Create")]
             ]
-    window=sg.Window("New...", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False, return_keyboard_events=True, alpha_channel=0)
+    window=sg.Window("New...", layout, finalize=True, icon=icon_path, element_justification="center", disable_minimize=False, return_keyboard_events=True, alpha_channel=0)
     window_centre(window,par_centre)
     
     while True:
@@ -187,7 +186,7 @@ def pref_window(pref, db, theme=None, par_centre=(None,None)):
             ],
             [sg.Button("Save"), sg.Button("Cancel")],
             ]
-    window=sg.Window("Preferences", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False, alpha_channel=0)
+    window=sg.Window("Preferences", layout, finalize=True, icon=icon_path, element_justification="center", disable_minimize=False, alpha_channel=0)
     window_centre(window,par_centre)
     
     while True:
@@ -236,7 +235,7 @@ def rename_window(old_name, theme=None, par_centre=(None,None)):
             [sg.Button("Confirm"), sg.Button("Cancel")]
             ]
     
-    window=sg.Window("Rename", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False, return_keyboard_events=True, alpha_channel=0)
+    window=sg.Window("Rename", layout, finalize=True, icon=icon_path, element_justification="center", disable_minimize=False, return_keyboard_events=True, alpha_channel=0)
     window_centre(window,par_centre)
     
     while True:
@@ -294,7 +293,7 @@ def set_reminder(time_data, pref, theme=None, par_centre=(None,None)):
             [sg.Button("Confirm"), sg.Button("Cancel")],
             ]
     
-    window=sg.Window("Set Reminder", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True, disable_minimize=False, return_keyboard_events=True, alpha_channel=0)
+    window=sg.Window("Set Reminder", layout, finalize=True, icon=icon_path, element_justification="center",  disable_minimize=False, return_keyboard_events=True, alpha_channel=0)
     window_centre(window,par_centre)
     
     if radio_date==True:
@@ -397,7 +396,7 @@ def view_reminders(db, time_data, theme=None, par_centre=(None,None)):
                 [sg.Button("Delete", disabled=True)]
                 ]
         
-        window=sg.Window("View Reminders", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False, alpha_channel=0)
+        window=sg.Window("View Reminders", layout, finalize=True, icon=icon_path, element_justification="center", disable_minimize=False, alpha_channel=0)
         window_centre(window,par_centre)
         
         while True:
@@ -444,7 +443,7 @@ def test_window(theme=None, par_centre=(None,None)):
             [sg.Button("x"),sg.Button("y")]
             ]
     
-    window=sg.Window("Preferences", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False, alpha_channel=0)
+    window=sg.Window("test", layout, finalize=True, icon=icon_path, element_justification="center", disable_minimize=False, alpha_channel=0)
     window_centre(window,par_centre)
     #event, values = window.read(timeout = 0)
     window.move(0,0)
