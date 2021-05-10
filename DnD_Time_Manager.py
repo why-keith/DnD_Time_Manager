@@ -593,7 +593,7 @@ while True:
         if remind_data !=False:
             db.reminders.append(remind_data)
             pickler(camp_dir+"/"+campaign+".pkl", db)
-            pickler("pref.pkl", pref)
+            pickler(user_area+"/pref.pkl", pref)
             print(db.reminders)
             
     elif event.endswith("::view_reminders"):
