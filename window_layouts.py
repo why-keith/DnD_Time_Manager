@@ -8,45 +8,67 @@ import custom_themes
 import condition_lists
 from database_class import time_increment
 from error import error
+import aux_functions as aux
 
 QT_ENTER_KEY1 =  'special 16777220'
 QT_ENTER_KEY2 =  'special 16777221'
 
 icon_path="dnd_logo.ico"
 
-def alert_box(text="TEXT HERE", window_name="ALERT", button_text="OK", sound=True, theme=None):
+def window_centre(window,par_centre):
+    if par_centre!=(None,None):
+        size=window.size
+        x,y=aux.TL_from_centre(par_centre, size)
+        if x<0:
+            x=0
+        if y<0:
+            y=0
+        event, values = window.read(timeout = 0)
+        window.move(int(x),int(y))
+    window.reappear()
+
+def alert_box(text="TEXT HERE", window_name="ALERT", button_text="OK", sound=True, theme=None, par_centre=(None,None)):
     lines=text.split("\n")
     
     sg.theme(theme)
     layout=[[sg.Text("  "+lines[i]+"  ")] for i in range(len(lines))]+[
-          #  [sg.Text("  "+text+"  ")],
             [sg.Button(button_text)]
             ]
-    window=sg.Window(window_name, layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=True, return_keyboard_events=True, )
+
+    window=sg.Window(window_name, layout, finalize=True, icon=icon_path, element_justification="center", disable_minimize=True, return_keyboard_events=True, alpha_channel=0)
+    window_centre(window,par_centre)
+    
     if sound==True:
         print("\a")
     
     while True:
         event, values = window.read()
+        wanted_event=True
         if event == sg.WIN_CLOSED:
             window.close()
             return False
         elif event==button_text or event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
             window.close()
             return True
+        else:
+            wanted_event=False
             
+        if wanted_event==True:
+            window.force_focus()    
 
-def choice_box(text, window_name="", theme=None):
+def choice_box(text, window_name="", theme=None, par_centre=(None,None)):
     sg.theme(theme)
     layout=[
             [sg.Text(text)],
             [sg.Button("Yes"), sg.Button("No")]
             ]
-    window=sg.Window(window_name, layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=True, return_keyboard_events=True, )
+    window=sg.Window(window_name, layout, finalize=True, icon=icon_path, element_justification="center", disable_minimize=True, return_keyboard_events=True, alpha_channel=0)
+    window_centre(window,par_centre)
     print("\a")
     
     while True:
         event, values = window.read()
+        wanted_event=True
         if event == sg.WIN_CLOSED:
             window.close()
             return False
@@ -56,8 +78,14 @@ def choice_box(text, window_name="", theme=None):
         elif event=="Yes" or event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
             window.close()
             return True
+        else:
+            wanted_event=False
+            
+        if wanted_event==True:
+            window.force_focus()
+
         
-def create_campaign(user_area, first=False, theme=None, ):
+def create_campaign(user_area, first=False, theme=None, par_centre=(None,None)):
     sg.theme(theme)
     layout=[
             [sg.Text("New Campaign")],
@@ -65,11 +93,13 @@ def create_campaign(user_area, first=False, theme=None, ):
             [sg.Text("Name"), sg.InputText("", size=(25,1), key="campaign_name")],
             [sg.Button("Create")]
             ]
-    window=sg.Window("New...", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False, return_keyboard_events=True, )
-
+    window=sg.Window("New...", layout, finalize=True, icon=icon_path, element_justification="center", disable_minimize=False, return_keyboard_events=True, alpha_channel=0)
+    window_centre(window,par_centre)
+    
     while True:
         event, values = window.read()
         focused_enter=None
+        wanted_event=True
      #   print(event)
         if event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
             active_element=window.FindElementWithFocus()          #Dectects if the enter key has been pressed and checks which element is active
@@ -92,7 +122,9 @@ def create_campaign(user_area, first=False, theme=None, ):
             
             try:
                 if name in listdir(abspath(user_area+"/campaigns")):
-                    alert_box(text="Campaign \"{}\" already exists".format(name))
+                    window.disable()
+                    alert_box(text="Campaign \"{}\" already exists".format(name), theme=theme, par_centre=par_centre)
+                    window.enable()
                     pass
                 else:
                     _dir=abspath(user_area+"/campaigns/{}".format(name))
@@ -105,10 +137,17 @@ def create_campaign(user_area, first=False, theme=None, ):
                     return name
             except Exception as e:
                 error(e)
-                alert_box(text="\"{}\" is not a valid campaign name".format(name))
+                window.disable()
+                alert_box(text="\"{}\" is not a valid campaign name".format(name), theme=theme, par_centre=par_centre)
+                window.enable()
                 pass
-                
-def pref_window(pref, db, theme=None):
+        else:
+            wanted_event=False
+            
+        if wanted_event==True:
+            window.force_focus()
+               
+def pref_window(pref, db, theme=None, par_centre=(None,None)):
 
     
     sg.theme(theme)
@@ -127,7 +166,7 @@ def pref_window(pref, db, theme=None):
             [sg.HorizontalSeparator()],
 
             [sg.Column([[sg.Text("Theme")],[sg.Text("Show Tenday")]]), 
-             sg.Column([[sg.Combo(themes, key="themes", size=(theme_len+2, 1), default_value=theme, readonly=True)], [sg.Checkbox("", default=pref["show_tenday"], key="show_tenday")]])
+             sg.Column([[sg.Combo(themes, key="themes", size=(theme_len+2, 1), default_value=pref["new_theme"], readonly=True)], [sg.Checkbox("", default=pref["show_tenday"], key="show_tenday")]])
              ],
         
             [sg.Text("")],
@@ -147,20 +186,23 @@ def pref_window(pref, db, theme=None):
             ],
             [sg.Button("Save"), sg.Button("Cancel")],
             ]
-    window=sg.Window("Preferences", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False)
-  
+    window=sg.Window("Preferences", layout, finalize=True, icon=icon_path, element_justification="center", disable_minimize=False, alpha_channel=0)
+    window_centre(window,par_centre)
+    
     while True:
         event, values = window.read()
+        wanted_event=True
         if event == sg.WIN_CLOSED or event=="Cancel":
             save=False
             break
         
         elif event=="Save":
-            
             try:
                 _=int(window["session_num"].get())
             except ValueError:
-                alert_box(text="Please enter a valid session number", theme=theme)
+                window.disable()
+                alert_box(text="Please enter a valid session number", theme=theme, par_centre=par_centre)
+                window.enable()
                 window["session_num"].Update(str(db.session_num))
                 continue
             
@@ -173,12 +215,18 @@ def pref_window(pref, db, theme=None):
             db.RAW=bool(window["RAW_weather"].get())
             db.session_num=int(window["session_num"].get())
             break
+        else:
+            wanted_event=False
+            
+        if wanted_event==True:
+            window.force_focus()
+    
         
     window.close()        
     return pref, save, db
             
     
-def rename_window(old_name, theme=None):
+def rename_window(old_name, theme=None, par_centre=(None,None)):
     sg.theme(theme)
     layout=[
             [sg.Text("Rename Campaign - "+old_name)],
@@ -187,11 +235,12 @@ def rename_window(old_name, theme=None):
             [sg.Button("Confirm"), sg.Button("Cancel")]
             ]
     
-    window=sg.Window("Rename", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False, return_keyboard_events=True)
-  
+    window=sg.Window("Rename", layout, finalize=True, icon=icon_path, element_justification="center", disable_minimize=False, return_keyboard_events=True, alpha_channel=0)
+    window_centre(window,par_centre)
+    
     while True:
         event, values = window.read()
-        
+        wanted_event=True
         focused_enter=None
      #   print(event)
         if event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
@@ -211,12 +260,19 @@ def rename_window(old_name, theme=None):
                 window.close()
                 return name
             else:
-                if name in listdir():                 
-                    alert_box(text="Campaign \"{}\" already exists".format(name))
+                if name in listdir(): 
+                    window.disable()
+                    alert_box(text="Campaign \"{}\" already exists".format(name), theme=theme, par_centre=par_centre)
+                    window.enable()
                     pass
+        else:
+            wanted_event=False
+            
+        if wanted_event==True:
+            window.force_focus()
+      
                 
-                
-def set_reminder(time_data, pref, theme=None): 
+def set_reminder(time_data, pref, theme=None, par_centre=(None,None)): 
     sg.theme(theme)
     
     hour, day, month, year=time_data
@@ -237,8 +293,9 @@ def set_reminder(time_data, pref, theme=None):
             [sg.Button("Confirm"), sg.Button("Cancel")],
             ]
     
-    window=sg.Window("Set Reminder", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True, disable_minimize=False, return_keyboard_events=True)
-
+    window=sg.Window("Set Reminder", layout, finalize=True, icon=icon_path, element_justification="center",  disable_minimize=False, return_keyboard_events=True, alpha_channel=0)
+    window_centre(window,par_centre)
+    
     if radio_date==True:
         for j in ("hour_input","day_input","month_input","year_input"):
             window[j].update(disabled=True)
@@ -249,6 +306,7 @@ def set_reminder(time_data, pref, theme=None):
     while True:
         event, values = window.read()
         focused_enter=None
+        wanted_event=True
         if event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
             active_element=window.FindElementWithFocus()          #Dectects if the enter key has been pressed and checks which element is active
     #        print(active_element)
@@ -295,7 +353,7 @@ def set_reminder(time_data, pref, theme=None):
                    try:
                        _=int(i)
                    except ValueError:
-                       alert_box(text="Please enter integer values", theme=theme)
+                       alert_box(text="Please enter integer values", theme=theme, par_centre=par_centre)
                        continue
 
             
@@ -305,16 +363,17 @@ def set_reminder(time_data, pref, theme=None):
             window.close()
             return (text, (hour,day,month,year)),pref
         
-        
+        else:
+            wanted_event=False
+            
+        if wanted_event==True:
+            window.force_focus()        
                 
-      #  else:
-       #         print(event)
-
-def view_reminders(db, time_data, theme=None):
+def view_reminders(db, time_data, theme=None, par_centre=(None,None)):
     sg.theme(theme)
     
     if db.reminders==[]:
-        if choice_box("No reminders found. Would you like to create one?", window_name="Alert", theme=theme)==True:
+        if choice_box("No reminders found. Would you like to create one?", window_name="Alert", theme=theme, par_centre=par_centre)==True:
             return "set_reminder"
         else:
             return
@@ -329,10 +388,7 @@ def view_reminders(db, time_data, theme=None):
                 list_box_width=len(i)
     
         
-       
-        
-        
-       # print(reminder_list)
+
         layout=[
                 [sg.Text("Reminders")],
                 [sg.HorizontalSeparator(color="gray")],
@@ -340,17 +396,19 @@ def view_reminders(db, time_data, theme=None):
                 [sg.Button("Delete", disabled=True)]
                 ]
         
-        window=sg.Window("View Reminders", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False)
-      
+        window=sg.Window("View Reminders", layout, finalize=True, icon=icon_path, element_justification="center", disable_minimize=False, alpha_channel=0)
+        window_centre(window,par_centre)
+        
         while True:
             event, values = window.read()
+            wanted_event=True
             if event == sg.WIN_CLOSED:
                 break
             
-            if event=="list_box" and len(db.reminders)!=0:
+            elif event=="list_box" and len(db.reminders)!=0:
                 window["Delete"].update(disabled=False)
             
-            if event=="Delete":
+            elif event=="Delete":
                 try:
                     index=window["list_box"].GetIndexes()[0]
                 except IndexError:
@@ -363,12 +421,17 @@ def view_reminders(db, time_data, theme=None):
                     
                     if len(db.reminders)==0:
                         window["Delete"].update(disabled=True)
-         #   else:
-          #      print(event)
+
+            else:
+                wanted_event=False
+            
+            if wanted_event==True:
+                window.force_focus()
+                
         window.close()         
         
                 
-def test_window(theme=None):
+def test_window(theme=None, par_centre=(None,None)):
     sg.theme(theme)
   #  c1=[sg.Button("Confirm"), sg.Button("Cancel")]
     layout=[
@@ -377,18 +440,34 @@ def test_window(theme=None):
             [sg.Text("New name"), sg.InputText("", size=(25,1), key="campaign_name")],
             #[sg.Button("Confirm"), sg.Button("Cancel")],
             [sg.Listbox(["aaaaa","bbbbb","ccccc","ddddd","eeeee","fffff","ggggg","hhhhh"], size=(15,6), key="list")],
-            [sg.Button("x")]
+            [sg.Button("x"),sg.Button("y")]
             ]
     
-    window=sg.Window("Preferences", layout, finalize=True, icon=icon_path, element_justification="center", force_toplevel=True,disable_minimize=False)
-  
+    window=sg.Window("test", layout, finalize=True, icon=icon_path, element_justification="center", disable_minimize=False, alpha_channel=0)
+    window_centre(window,par_centre)
+    #event, values = window.read(timeout = 0)
+    window.move(0,0)
+    #sleep(1)
+  #  window.reappear()
+    i,j=0,0
     while True:
-        event, values = window.read()
+        
+        event, values = window.read() 
+        wanted_event=True
         if event == sg.WIN_CLOSED:
             break
         elif event=="x":
-           print( window["tab"].read())
+           window.move(i,j)
+           i+=20
+           j+=20
+        else:
+            wanted_event=False
+            
+        if wanted_event==True:
+            window.force_focus()   
+
+        
     window.close()
     
 if __name__=="__main__":  
-    test_window()
+    test_window(par_centre=(-10,-5))
