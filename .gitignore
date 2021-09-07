@@ -131,3 +131,5 @@ dmypy.json
 log.txt
 error_log.txt
 /campaigns
+
+.idea/
