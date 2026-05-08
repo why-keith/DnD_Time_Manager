@@ -138,7 +138,6 @@ def create_campaign(user_area, first=False, theme=None, par_centre=(None,None)):
         wanted_event=True
         if event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
             active_element=window.FindElementWithFocus()          #Dectects if the enter key has been pressed and checks which element is active
-            print(active_element)
 
             if active_element==window["campaign_name"]:
                 focused_enter="campaign_name"
@@ -297,7 +296,6 @@ def rename_window(old_name, user_area, theme=None, par_centre=(None,None)):
         focused_enter=None
         if event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
             active_element=window.FindElementWithFocus()          #Dectects if the enter key has been pressed and checks which element is active
-            print(active_element)
 
             if active_element==window["campaign_name"]:
                 focused_enter="campaign_name"

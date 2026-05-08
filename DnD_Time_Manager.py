@@ -131,7 +131,6 @@ def _move_files(target_path: str | Path) -> bool:
         error(e)
     else:
         if "campaigns" in listdir(target_path):
-            print("deleting")
             try:
                 rmtree("campaigns")
             except Exception as e:
@@ -147,7 +146,6 @@ def _move_files(target_path: str | Path) -> bool:
         error(e)
     else:
         if "pref.pkl" in listdir(target_path):
-            print("deleting")
             try:
                 remove("pref.pkl")
             except Exception as e:
@@ -176,7 +174,6 @@ if not user_area.exists(): #creates directory for save data
 
 if Path("pref.pkl").exists() or Path("campaigns").exists():    #moves files from program install location to user area
     if popup.alert_box(text=f"Moving campaign and preference files to user area\nFiles will be located at:\n{user_area}", window_name="Moving files", theme="Default"):
-        print("moving files...")
         if not _move_files(user_area):
             popup.alert_box(text="Unable to delete \"pref.pkl\" and/or \"/campaigns\"\nPlease remove manually")
     else:
@@ -188,10 +185,8 @@ else:
     pref=default_pref
     pref["version"]=VERSION
     pickler(user_area / "pref.pkl", pref)
-    print("new pref file created")
 
 if pref["version"]!=VERSION:      # updates pref file with any new entries
-    print(f"updating pref file to {VERSION}")
     for key in default_pref:
             if key not in pref:
                 pref[key]=default_pref[key]
@@ -354,9 +349,7 @@ while True:
                 popup.alert_box(text=i[0], window_name="Reminder", theme=pref["theme"], par_centre=centre)
                 window.enable()
         for i in to_remove:
-            print("removing "+i[0])
             db.reminders.remove(i)
-        print(db.reminders)
 
     elif event == "End Session":
         _end_session()
@@ -539,7 +532,6 @@ while True:
     # Tools--------------------------------------------------------------------
 
     elif event.endswith("::raw_time_out"):
-        print(db.day_raw,db.hour)
         window.disable()
         popup.alert_box(text=f"{db.hour} hours, {db.day_raw} days\n(This value can be accessed from the error log)", window_name="Raw Time", sound=False, theme=pref["theme"], par_centre=centre)
         window.enable()
@@ -555,7 +547,6 @@ while True:
             db.reminders.append(remind_data)
             pickler(camp_dir / f"{campaign}.pkl", db)
             pickler(user_area / "pref.pkl", pref)
-            print(db.reminders)
 
     elif event.endswith("::view_reminders"):
         time_data=(window["hour_display"].get(), window["day_display"].get(), window["month_display"].get(), window["year_display"].get() )
@@ -564,7 +555,6 @@ while True:
             remind_data, pref=popup.set_reminder(time_data, pref, theme=pref["theme"], par_centre=centre)
             if remind_data !=False:
                 db.reminders.append(remind_data)
-                print(db.reminders)
         window.enable()
         pickler(camp_dir / f"{campaign}.pkl", db)
 
