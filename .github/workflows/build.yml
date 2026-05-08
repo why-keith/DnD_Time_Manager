@@ -17,17 +17,17 @@ jobs:
       - name: Set up Python 3.14
         uses: actions/setup-python@v5
         with:
-          python-version: "3.14"
+          python-version: "3.14.x"
 
       - name: Install dependencies
         run: pip install -r requirements.txt
 
       - name: Build with Nuitka
         run: |
-          python -m nuitka --standalone --windows-icon-from-ico=dnd_logo.ico --output-filename=DnD_Time_Manager DnD_Time_Manager.py
+          python -m nuitka --standalone --windows-icon-from-ico=dnd_logo.ico --output-filename=DnD_Time_Manager DnD_Time_Manager.py --enable-plugin=tk-inter --assume-yes-for-downloads --output-dir=build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: DnD_Time_Manager-standalone
-          path: DnD_Time_Manager.dist/
+          name: DnD_Time_Manager
+          path: build\DnD_Time_Manager.dist
