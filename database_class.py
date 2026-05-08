@@ -174,3 +174,6 @@ def time_increment(start_time: tuple[int, ...], increment: tuple[int, ...]) -> l
             new_time[i+1]+=int(new_time[i]/limit)+1
     new_time[0]-=1
     return new_time
+
+# Backwards compatibility alias for pickle deserialization
+db = Database
