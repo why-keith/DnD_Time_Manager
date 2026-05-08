@@ -10,6 +10,7 @@ from tkinter import Tk
 from tkinter.filedialog import askdirectory
 from send2trash import send2trash
 from urllib.request import urlopen
+from urllib.error import URLError
 from sys import exit
 from os import remove
 from shutil import copyfile, copytree, rmtree
@@ -65,7 +66,7 @@ def _update_db(db: Database) -> Database:
     if not _version_compare(db_version):
         try:
             print(f"Updating database from {db.version} to {VERSION}")
-        except:
+        except AttributeError:
             print(f"Updating database to {VERSION}")
 
         attributes=[a for a in dir(db) if not a.startswith('__') and not callable(getattr(db, a))]
@@ -329,7 +330,7 @@ while True:
         try:
             hour_change=int(window["hour_input"].Get())
             day_change=int(window["day_input"].Get())
-        except:
+        except ValueError:
             print("INVALID ENTRY")
             error(f"Invalid time input \"{window['hour_input'].Get()}, {window['day_input'].Get()}\" detected")
             continue
@@ -581,7 +582,7 @@ while True:
     elif event.endswith("::readme"):
         try:
             _=urlopen("https://github.com/")
-        except:
+        except URLError:
             startfile("README.md")
         else:
             startfile("https://github.com/JP-Carr/DnD_Time_Manager/blob/master/README.md")
@@ -591,7 +592,7 @@ while True:
         try:
             _=urlopen("https://github.com/")
 
-        except:
+        except URLError:
             window.disable()
             popup.alert_box(text="Unable to reach github.com", theme=pref["theme"], par_centre=centre)
             window.enable()
