@@ -1,6 +1,6 @@
 from random import randint
 
-wind_dir=["N","NE","E","SE","S","SW","W","NE"]
+wind_dir=["N","NE","E","SE","S","SW","W","NW"]
 wind_speed=["None" for _ in range(12)]+["Light" for _ in range(5)]+["Strong" for _ in range(3)]
 precipitation=["None" for _ in range(12)]+["Light" for _ in range(5)]+["Heavy" for _ in range(3)]
 temp=["Normal for season" for _ in range(14)]+[f"{round((randint(1,4)*10)/1.8)}°C colder than normal" for _ in range(3)]+[f"{round((randint(1,4)*10)/1.8)}°C hotter than normal" for _ in range(3)]
