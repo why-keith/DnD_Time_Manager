@@ -1,160 +1,168 @@
 import pickle
 from random import choice, randint
+from pathlib import Path
 import condition_lists as conditions
 from error import error
-from os.path import abspath
-########################################################
 
-class db:
-    
-    def __init__(self):
+
+class Database:
+    """Stores and manages the in-game time and weather state for a campaign."""
+
+    def __init__(self) -> None:
+        """Initialises a new Database with default time and weather values."""
         print("Initalising database...")
+        self.version: str = "v0.9.0"
+
+        self.day_raw: int = 0
+        self.day: int = 1
+        self.hour: int = 0
+        self.tenday: int = 1
+        self.month_raw: int = 0
+        self.month: list = [self.month_raw+1, conditions.months[self.month_raw]]
+        self.year: int = 1491
+        self.precipitation: str = choice(conditions.precipitation)
+        self.wind_dir: str = choice(conditions.wind_dir)
+        self.windspeed: str = choice(conditions.wind_speed)
+        self.temperature: str = choice(conditions.temp)
+        self.RAW: bool = False
+
+        self.reminders: list = []
+        self.session_num: int = 1
+
+    def _next_day(self, days: int = 1) -> None:
+        """Advances weather and calendar state by the given number of days.
+
+        Args:
+            days: Number of days to advance. Negative values go backwards.
         """
-        self.day_data={"day_raw":0,
-              "day": 1,
-              "hour":0,
-              "tenday":1,
-              "month":[1,conditions.months[1]],
-              "year":1491,
-              "precipitation": choice(conditions.precipitation),
-              "wind_dir": choice(conditions.wind_dir),
-              "windspeed": choice(conditions.wind_speed),
-              "temperature": choice(conditions.temp)
-              } 
-        """
-        self.version="v0.9.0"
-        
-        self.day_raw=0
-        self.day=1
-        self.hour=0
-        self.tenday=1
-        self.month_raw=0
-        self.month=[self.month_raw+1,conditions.months[self.month_raw]]
-        self.year=1491
-        self.precipitation= choice(conditions.precipitation)
-        self.wind_dir=choice(conditions.wind_dir)
-        self.windspeed=choice(conditions.wind_speed)
-        self.temperature= choice(conditions.temp)
-        self.RAW=False
-        
-        self.reminders=[]
-        self.session_num=1
-      
-  
-    
-    def show_all(self):
-        for i in db:
-           print("{}: {}".format(i,self.day_data[i]))
-           
-    def next_day(self, days=1):
-        if self.RAW==True:
+        if self.RAW:
             prob=0
         else:
             prob=5
-     
-        for i in range(abs(days)):
-            x=[randint(0,prob) for i in range(4)]
-            if x[0]==0:
+
+        for _ in range(abs(days)):
+            change_rolls=[randint(0,prob) for _ in range(4)]
+            if change_rolls[0]==0:
                 self.precipitation=choice(conditions.precipitation)
-            if x[1]==0:
+            if change_rolls[1]==0:
                 self.wind_dir=choice(conditions.wind_dir)
-            if x[2]==0:
+            if change_rolls[2]==0:
                 self.windspeed=choice(conditions.wind_speed)
-            if x[3]==0:
+            if change_rolls[3]==0:
                 self.temperature=choice(conditions.temp)
-        
+
         self.day=self.day_raw%30+1
         self.tenday=int((self.day_raw%30)/10)+1
         self.month_raw=int((self.day_raw%360)/30)
         self.month=[self.month_raw+1,conditions.months[self.month_raw]]
         self.year=int(self.day_raw/360)+1491
-                
-        
-        
-    def change_day(self, x):
-        #x=input("Enter number of days to pass:\n>>")
+
+    def change_day(self, days: int) -> None:
+        """Increments the raw day counter and updates the calendar.
+
+        Args:
+            days: Number of days to add (can be negative).
+        """
         try:
-            self.day_raw+=int(x)
-            if int(x)!=0:
-                self.next_day(int(x))
-                
+            self.day_raw+=int(days)
+            if int(days)!=0:
+                self._next_day(int(days))
+
         except TypeError as e:
             print("INVALID TIME INCREMENT")
-           
-    def change_hour(self, x):
-       # x=input("Enter number of hours to pass:\n>>")
+
+    def change_hour(self, hours: int) -> None:
+        """Increments the hour counter, rolling over into new days as needed.
+
+        Args:
+            hours: Number of hours to add (can be negative).
+        """
         try:
-            self.hour+=int(x)
+            self.hour+=int(hours)
             while self.hour>=24:
                 self.hour-=24
                 self.day_raw+=1
-                self.next_day()
+                self._next_day()
             while self.hour<0:
                 self.hour+=24
                 self.day_raw-=1
-                self.next_day(-1)
-            print("Time: {}:00".format(self.hour))
+                self._next_day(-1)
+            print(f"Time: {self.hour}:00")
         except TypeError as e:
             print("INVALID TIME INCREMENT")
 
-    def time_data(self):
-        return (self.hour,self.day,self.month[0],self.year)
-    
-    
+    def time_data(self) -> tuple[int, int, int, int]:
+        """Returns the current time as a tuple.
 
-def pickler(path,obj):
-    path=abspath(path)
-    outfile = open(path,'wb')
-    pickle.dump(obj,outfile)
-    outfile.close()
-    print(path+" pickled")
-    
-def unpickle(path):
-    try:    
-        path=abspath(path)
-        infile = open(path,'rb')
-        obj = pickle.load(infile)
-        infile.close()
-        print(path+" unpickled")
+        Returns:
+            A tuple of (hour, day, month_number, year).
+        """
+        return (self.hour,self.day,self.month[0],self.year)
+
+
+def pickler(path: str | Path, obj: object) -> None:
+    """Serialises an object to a file using pickle.
+
+    Args:
+        path: Destination file path.
+        obj: The object to serialise.
+    """
+    path = Path(path)
+    with path.open('wb') as f:
+        pickle.dump(obj, f)
+    print(f"{path} pickled")
+
+def unpickle(path: str | Path) -> object:
+    """Deserialises an object from a pickle file.
+
+    Args:
+        path: Path to the pickle file.
+
+    Returns:
+        The deserialised object, or None if the file does not exist.
+    """
+    try:
+        path = Path(path)
+        with path.open('rb') as f:
+            obj = pickle.load(f)
+        print(f"{path} unpickled")
         return obj
     except FileNotFoundError:
         return None
 
-def time_comparison(time0, time1):
-    """
-    Compares in-game time   
+def time_comparison(time0: tuple[int, ...], time1: tuple[int, ...]) -> bool:
+    """Compares two in-game timestamps to determine if time1 has been reached.
 
-    Parameters
-    ----------
-    time0 : tuple
-        time data of the form (hour,day,month,year).
-    time1 : tuple
-        time data of the form (hour,day,month,year).
+    Args:
+        time0: Current time as (hour, day, month, year).
+        time1: Target time as (hour, day, month, year).
 
-    Returns
-    -------
-    bool
-        True if time1<=time0.
-
+    Returns:
+        True if time0 >= time1, False otherwise.
     """
     if len(time0)!=len(time1):
         error("time_comparison length error")
         return
-    
+
     for i in range(len(time0)):
         print(time0[-i-1],time1[-i-1])
         if time0[-i-1]>time1[-i-1]:
-          #  print(True)
             return True
         elif time0[-i-1]<time1[-i-1]:
-         #   print(False)
             return False
     print("equal")
     return True
 
-def time_increment(start_time, increment):
+def time_increment(start_time: tuple[int, ...], increment: tuple[int, ...]) -> list[int]:
+    """Adds a time increment to a start time, carrying over unit boundaries.
 
+    Args:
+        start_time: Base time as (hour, day, month, year).
+        increment: Amount to add in each unit as (hour, day, month, year).
 
+    Returns:
+        The resulting time as a list of integers.
+    """
     new_time=[i+j for i,j in zip(start_time, increment)]
     limits=[24, 30, 12, 1e99]
     new_time[0]+=1
@@ -164,5 +172,8 @@ def time_increment(start_time, increment):
             print(0)
             new_time[i]%=limit
             new_time[i+1]+=int(new_time[i]/limit)+1
-    new_time[0]-=1   
-    return new_time       
+    new_time[0]-=1
+    return new_time
+
+# Backwards compatibility alias for pickle deserialization
+db = Database
