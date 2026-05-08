@@ -17,8 +17,9 @@ from shutil import copyfile, copytree, rmtree
 import aux_functions as aux
 
 
-VERSION="v0.10.0"
+VERSION: str = "v0.10.0"
 
+DEV_MODE: bool
 if Path(".gitignore").exists():
     DEV_MODE=True
 else:
@@ -28,7 +29,7 @@ else:
 
 # Functions--------------------------------------------------------------------
 
-def _version_compare(ver, current_ver=VERSION):
+def _version_compare(ver: str, current_ver: str = VERSION) -> bool:
     """
     Checks with a given version against that of the program
 
@@ -55,7 +56,7 @@ def _version_compare(ver, current_ver=VERSION):
     return up_to_date
 
 
-def _update_db(db):
+def _update_db(db: db_class) -> db_class:
     """
     Updates a database created in an old version by porting its attributes
     into a new replacement database if required
@@ -105,7 +106,7 @@ def _update_db(db):
     else:
         return db
 
-def _update_menu():
+def _update_menu() -> dict:
     """
     Updates the elements of the menu bar
 
@@ -131,7 +132,7 @@ def _update_menu():
 
     return menu_dict
 
-def _move_files(target_path):
+def _move_files(target_path: str | Path) -> bool:
 
     deleted=True
     target_path = Path(target_path)
@@ -167,13 +168,13 @@ def _move_files(target_path):
             error(f"{target_path / 'pref.pkl'} was not moved successfully")
     return deleted
 
-def _end_session():
+def _end_session() -> None:
     with open(camp_dir / f"{campaign}.txt", "a") as log:
         log.write(f"End of session {db.session_num} ------------------------------------------------------\n")
     db.session_num+=1
     pickler(camp_dir / f"{campaign}.pkl", db)
 
-def _debug_log(text):
+def _debug_log(text: object) -> None:
     with open("debug.txt", "a") as file:
         file.write(f"{str(text)}\n")
 

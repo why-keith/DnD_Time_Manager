@@ -1,4 +1,4 @@
-def window_centre(position,size):
+def window_centre(position: tuple[float, float], size: tuple[float, float]) -> tuple[float, float]:
     """
     Calculates a window's centre from it's position and size
 
@@ -18,7 +18,7 @@ def window_centre(position,size):
     centre=[s/2+p for p,s in zip(position,size)]
     return tuple(centre)
 
-def TL_from_centre(parent_centre, child_size):
+def TL_from_centre(parent_centre: tuple[float, float], child_size: tuple[float, float]) -> tuple[float, float]:
     """
     Calculates the requires location of a windows top-left corner, so that its
     centre and that of the parent window are aligned

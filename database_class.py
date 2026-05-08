@@ -7,27 +7,27 @@ from error import error
 
 class Database:
 
-    def __init__(self):
+    def __init__(self) -> None:
         print("Initalising database...")
-        self.version="v0.9.0"
+        self.version: str = "v0.9.0"
 
-        self.day_raw=0
-        self.day=1
-        self.hour=0
-        self.tenday=1
-        self.month_raw=0
-        self.month=[self.month_raw+1,conditions.months[self.month_raw]]
-        self.year=1491
-        self.precipitation= choice(conditions.precipitation)
-        self.wind_dir=choice(conditions.wind_dir)
-        self.windspeed=choice(conditions.wind_speed)
-        self.temperature= choice(conditions.temp)
-        self.RAW=False
+        self.day_raw: int = 0
+        self.day: int = 1
+        self.hour: int = 0
+        self.tenday: int = 1
+        self.month_raw: int = 0
+        self.month: list = [self.month_raw+1, conditions.months[self.month_raw]]
+        self.year: int = 1491
+        self.precipitation: str = choice(conditions.precipitation)
+        self.wind_dir: str = choice(conditions.wind_dir)
+        self.windspeed: str = choice(conditions.wind_speed)
+        self.temperature: str = choice(conditions.temp)
+        self.RAW: bool = False
 
-        self.reminders=[]
-        self.session_num=1
+        self.reminders: list = []
+        self.session_num: int = 1
 
-    def _next_day(self, days=1):
+    def _next_day(self, days: int = 1) -> None:
         if self.RAW:
             prob=0
         else:
@@ -52,7 +52,7 @@ class Database:
 
 
 
-    def change_day(self, x):
+    def change_day(self, x: int) -> None:
         try:
             self.day_raw+=int(x)
             if int(x)!=0:
@@ -61,7 +61,7 @@ class Database:
         except TypeError as e:
             print("INVALID TIME INCREMENT")
 
-    def change_hour(self, x):
+    def change_hour(self, x: int) -> None:
         try:
             self.hour+=int(x)
             while self.hour>=24:
@@ -76,18 +76,18 @@ class Database:
         except TypeError as e:
             print("INVALID TIME INCREMENT")
 
-    def time_data(self):
+    def time_data(self) -> tuple[int, int, int, int]:
         return (self.hour,self.day,self.month[0],self.year)
 
 
 
-def pickler(path: str | Path, obj) -> None:
+def pickler(path: str | Path, obj: object) -> None:
     path = Path(path)
     with path.open('wb') as f:
         pickle.dump(obj, f)
     print(f"{path} pickled")
 
-def unpickle(path: str | Path):
+def unpickle(path: str | Path) -> object:
     try:
         path = Path(path)
         with path.open('rb') as f:
@@ -97,7 +97,7 @@ def unpickle(path: str | Path):
     except FileNotFoundError:
         return None
 
-def time_comparison(time0, time1):
+def time_comparison(time0: tuple[int, ...], time1: tuple[int, ...]) -> bool:
     """
     Compares in-game time
 
@@ -127,7 +127,7 @@ def time_comparison(time0, time1):
     print("equal")
     return True
 
-def time_increment(start_time, increment):
+def time_increment(start_time: tuple[int, ...], increment: tuple[int, ...]) -> list[int]:
 
 
     new_time=[i+j for i,j in zip(start_time, increment)]

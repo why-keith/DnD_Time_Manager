@@ -1,6 +1,6 @@
 from datetime import datetime
 
-def error(message, sound=True):
+def error(message: object, sound: bool = True) -> None:
     message=str(message)
     print(message)
     error_time=datetime.now().strftime("%d/%m/%Y %H:%M:%S")
