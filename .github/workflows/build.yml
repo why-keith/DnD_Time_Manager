@@ -1,9 +1,8 @@
 name: Build Standalone (Nuitka)
 
 on:
-  push:
-    branches:
-      - master
+  release:
+    types: [published]
   workflow_dispatch:
 
 jobs:
@@ -31,3 +30,9 @@ jobs:
         with:
           name: DnD_Time_Manager
           path: build\DnD_Time_Manager.dist
+
+      - name: Upload to Release
+        if: github.event_name == 'release'
+        run: gh release upload "${{ github.event.release.tag_name }}" build/DnD_Time_Manager.dist/* --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
