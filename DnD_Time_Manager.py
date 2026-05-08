@@ -440,7 +440,7 @@ while True:
 
     elif event.endswith("::rename_campaign"):
         window.disable()
-        new_campaign=popup.rename_window(campaign, theme=pref["theme"], par_centre=centre)
+        new_campaign=popup.rename_window(campaign, user_area, theme=pref["theme"], par_centre=centre)
         window.enable()
 
         if new_campaign!=None:
