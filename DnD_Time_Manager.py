@@ -1,7 +1,6 @@
 import PySimpleGUI as sg
 from os import startfile, listdir, rename, mkdir, rmdir, getenv
 from pathlib import Path
-#from time import sleep
 from error import error
 import window_layouts as popup
 from database_class import pickler, unpickle, time_comparison
@@ -24,8 +23,6 @@ if Path(".gitignore").exists():
     DEV_MODE=True
 else:
     DEV_MODE=False
-
-#DEV_MODE=False #OVERRIDE
 
 # Functions--------------------------------------------------------------------
 
@@ -166,15 +163,6 @@ def _end_session() -> None:
     db.session_num+=1
     pickler(camp_dir / f"{campaign}.pkl", db)
 
-def _debug_log(text: object) -> None:
-    """Appends a line of text to the debug log file.
-
-    Args:
-        text: The value to write; will be converted to string.
-    """
-    with open("debug.txt", "a") as file:
-        file.write(f"{str(text)}\n")
-
 # Preferences & campaign loading-----------------------------------------------
 
 if not DEV_MODE:
@@ -282,7 +270,6 @@ window.force_focus()
 
 while True:
 
-
     event, values = window.read()
 
     focused_enter=None
@@ -306,7 +293,6 @@ while True:
     elif event=="Log" or focused_enter=="log":    #submits log
 
         if window["log_input"].Get() not in (""," ","  "):
-
 
             try:
                 with open(camp_dir / f"{campaign}.txt", "a") as log:
@@ -339,7 +325,6 @@ while True:
                 error(f"Unable to create {campaign}.txt{str(e2)}")
 
     elif event == "Submit" or focused_enter=="time":  #Submits changes to database time and updates day conditions
-
 
         try:
             hour_change=int(window["hour_input"].Get())

@@ -1,5 +1,4 @@
 import PySimpleGUI as sg
-#from time import sleep
 from os import listdir, mkdir
 from os.path import abspath
 from database_class import Database, pickler
@@ -137,7 +136,6 @@ def create_campaign(user_area, first=False, theme=None, par_centre=(None,None)):
         event, values = window.read()
         focused_enter=None
         wanted_event=True
-     #   print(event)
         if event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
             active_element=window.FindElementWithFocus()          #Dectects if the enter key has been pressed and checks which element is active
             print(active_element)
@@ -296,7 +294,6 @@ def rename_window(old_name, theme=None, par_centre=(None,None)):
         event, values = window.read()
         wanted_event=True
         focused_enter=None
-     #   print(event)
         if event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
             active_element=window.FindElementWithFocus()          #Dectects if the enter key has been pressed and checks which element is active
             print(active_element)
@@ -464,8 +461,6 @@ def view_reminders(db, time_data, theme=None, par_centre=(None,None)):
             if len(i)>list_box_width:
                 list_box_width=len(i)
 
-
-
         layout=[
                 [sg.Text("Reminders")],
                 [sg.HorizontalSeparator(color="gray")],
@@ -510,22 +505,17 @@ def view_reminders(db, time_data, theme=None, par_centre=(None,None)):
 
 def test_window(theme=None, par_centre=(None,None)):
     sg.theme(theme)
-  #  c1=[sg.Button("Confirm"), sg.Button("Cancel")]
     layout=[
             [sg.Text("test")],
             [sg.HorizontalSeparator(color="gray")],
             [sg.Text("New name"), sg.InputText("", size=(25,1), key="campaign_name")],
-            #[sg.Button("Confirm"), sg.Button("Cancel")],
             [sg.Listbox(["aaaaa","bbbbb","ccccc","ddddd","eeeee","fffff","ggggg","hhhhh"], size=(15,6), key="list")],
             [sg.Button("x"),sg.Button("y")]
             ]
 
     window=sg.Window("test", layout, finalize=True, icon=icon_path, element_justification="center", disable_minimize=False, alpha_channel=0)
     _window_centre(window,par_centre)
-    #event, values = window.read(timeout = 0)
     window.move(0,0)
-    #sleep(1)
-  #  window.reappear()
     i,j=0,0
     while True:
 
