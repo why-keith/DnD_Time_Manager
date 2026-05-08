@@ -33,8 +33,8 @@ class Database:
         else:
             prob=5
 
-        for i in range(abs(days)):
-            x=[randint(0,prob) for i in range(4)]
+        for _ in range(abs(days)):
+            x=[randint(0,prob) for _ in range(4)]
             if x[0]==0:
                 self.precipitation=choice(conditions.precipitation)
             if x[1]==0:

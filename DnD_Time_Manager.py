@@ -5,7 +5,7 @@ from pathlib import Path
 from error import error
 import window_layouts as popup
 from database_class import pickler, unpickle, time_comparison
-from database_class import Database as db_class
+from database_class import Database
 from default_pref import default_pref
 from tkinter import Tk
 from tkinter.filedialog import askdirectory
@@ -56,7 +56,7 @@ def _version_compare(ver: str, current_ver: str = VERSION) -> bool:
     return up_to_date
 
 
-def _update_db(db: db_class) -> db_class:
+def _update_db(db: Database) -> Database:
     """
     Updates a database created in an old version by porting its attributes
     into a new replacement database if required
@@ -84,7 +84,7 @@ def _update_db(db: db_class) -> db_class:
             print(f"Updating database to {VERSION}")
 
         attributes=[a for a in dir(db) if not a.startswith('__') and not callable(getattr(db, a))]
-        new_db=db_class()
+        new_db=Database()
         for i in attributes:
             try:
                 setattr(new_db,i, getattr(db,i))
