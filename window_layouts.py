@@ -138,7 +138,6 @@ def create_campaign(user_area, first=False, theme=None, par_centre=(None,None)):
         wanted_event=True
         if event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
             active_element=window.FindElementWithFocus()          #Dectects if the enter key has been pressed and checks which element is active
-            print(active_element)
 
             if active_element==window["campaign_name"]:
                 focused_enter="campaign_name"
@@ -267,11 +266,12 @@ def pref_window(pref, db, theme=None, par_centre=(None,None)):
     return pref, save, db
 
 
-def rename_window(old_name, theme=None, par_centre=(None,None)):
+def rename_window(old_name, user_area, theme=None, par_centre=(None,None)):
     """Opens a dialog to rename a campaign.
 
     Args:
         old_name: The current campaign name, displayed in the dialog header.
+        user_area: Path to the user data directory.
         theme: PySimpleGUI theme string to apply.
         par_centre: Parent window centre (x, y) for positioning, or (None, None).
 
@@ -295,7 +295,6 @@ def rename_window(old_name, theme=None, par_centre=(None,None)):
         focused_enter=None
         if event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2):
             active_element=window.FindElementWithFocus()          #Dectects if the enter key has been pressed and checks which element is active
-            print(active_element)
 
             if active_element==window["campaign_name"]:
                 focused_enter="campaign_name"
@@ -306,11 +305,11 @@ def rename_window(old_name, theme=None, par_centre=(None,None)):
 
         elif event=="Confirm" or focused_enter=="campaign_name":
             name=window["campaign_name"].Get()
-            if name!="" and name not in listdir():
+            if name!="" and name not in listdir(abspath(user_area+"/campaigns")):
                 window.close()
                 return name
             else:
-                if name in listdir():
+                if name in listdir(abspath(user_area+"/campaigns")):
                     window.disable()
                     alert_box(text=f"Campaign \"{name}\" already exists", theme=theme, par_centre=par_centre)
                     window.enable()
@@ -410,16 +409,18 @@ def set_reminder(time_data, pref, theme=None, par_centre=(None,None)):
                d_year=(window["year_input"]).get()
                pref["set_reminder_option"]="time"
 
+               valid=True
                for i in (d_hour,d_day,d_month,d_year):
                    try:
                        _=int(i)
                    except ValueError:
                        alert_box(text="Please enter integer values", theme=theme, par_centre=par_centre)
-                       continue
+                       valid=False
+                       break
 
-
-               d_hour,d_day,d_month,d_year=int(d_hour),int(d_day),int(d_month),int(d_year)
-               hour, day, month, year=time_increment(start_time=(hour, day, month, year), increment=(d_hour,d_day,d_month,d_year))
+               if valid:
+                   d_hour,d_day,d_month,d_year=int(d_hour),int(d_day),int(d_month),int(d_year)
+                   hour, day, month, year=time_increment(start_time=(hour, day, month, year), increment=(d_hour,d_day,d_month,d_year))
 
             window.close()
             return (text, (hour,day,month,year)),pref
