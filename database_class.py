@@ -142,15 +142,13 @@ def time_comparison(time0: tuple[int, ...], time1: tuple[int, ...]) -> bool:
     """
     if len(time0)!=len(time1):
         error("time_comparison length error")
-        return
+        return False
 
     for i in range(len(time0)):
-        print(time0[-i-1],time1[-i-1])
         if time0[-i-1]>time1[-i-1]:
             return True
         elif time0[-i-1]<time1[-i-1]:
             return False
-    print("equal")
     return True
 
 def time_increment(start_time: tuple[int, ...], increment: tuple[int, ...]) -> list[int]:
@@ -169,9 +167,9 @@ def time_increment(start_time: tuple[int, ...], increment: tuple[int, ...]) -> l
     for i in range(len(new_time)-1):
         limit=limits[i]
         while new_time[i]>limit:
-            print(0)
+            carry=new_time[i]//limit
             new_time[i]%=limit
-            new_time[i+1]+=int(new_time[i]/limit)+1
+            new_time[i+1]+=carry
     new_time[0]-=1
     return new_time
 
