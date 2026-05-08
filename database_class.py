@@ -68,7 +68,7 @@ class Database:
             if int(days)!=0:
                 self._next_day(int(days))
 
-        except TypeError as e:
+        except TypeError:
             print("INVALID TIME INCREMENT")
 
     def change_hour(self, hours: int) -> None:
@@ -88,7 +88,7 @@ class Database:
                 self.day_raw-=1
                 self._next_day(-1)
             print(f"Time: {self.hour}:00")
-        except TypeError as e:
+        except TypeError:
             print("INVALID TIME INCREMENT")
 
     def time_data(self) -> tuple[int, int, int, int]:
