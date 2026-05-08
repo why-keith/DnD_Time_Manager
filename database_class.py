@@ -6,8 +6,10 @@ from error import error
 
 
 class Database:
+    """Stores and manages the in-game time and weather state for a campaign."""
 
     def __init__(self) -> None:
+        """Initialises a new Database with default time and weather values."""
         print("Initalising database...")
         self.version: str = "v0.9.0"
 
@@ -28,6 +30,11 @@ class Database:
         self.session_num: int = 1
 
     def _next_day(self, days: int = 1) -> None:
+        """Advances weather and calendar state by the given number of days.
+
+        Args:
+            days: Number of days to advance. Negative values go backwards.
+        """
         if self.RAW:
             prob=0
         else:
@@ -50,9 +57,12 @@ class Database:
         self.month=[self.month_raw+1,conditions.months[self.month_raw]]
         self.year=int(self.day_raw/360)+1491
 
-
-
     def change_day(self, x: int) -> None:
+        """Increments the raw day counter and updates the calendar.
+
+        Args:
+            x: Number of days to add (can be negative).
+        """
         try:
             self.day_raw+=int(x)
             if int(x)!=0:
@@ -62,6 +72,11 @@ class Database:
             print("INVALID TIME INCREMENT")
 
     def change_hour(self, x: int) -> None:
+        """Increments the hour counter, rolling over into new days as needed.
+
+        Args:
+            x: Number of hours to add (can be negative).
+        """
         try:
             self.hour+=int(x)
             while self.hour>=24:
@@ -77,17 +92,35 @@ class Database:
             print("INVALID TIME INCREMENT")
 
     def time_data(self) -> tuple[int, int, int, int]:
+        """Returns the current time as a tuple.
+
+        Returns:
+            A tuple of (hour, day, month_number, year).
+        """
         return (self.hour,self.day,self.month[0],self.year)
 
 
-
 def pickler(path: str | Path, obj: object) -> None:
+    """Serialises an object to a file using pickle.
+
+    Args:
+        path: Destination file path.
+        obj: The object to serialise.
+    """
     path = Path(path)
     with path.open('wb') as f:
         pickle.dump(obj, f)
     print(f"{path} pickled")
 
 def unpickle(path: str | Path) -> object:
+    """Deserialises an object from a pickle file.
+
+    Args:
+        path: Path to the pickle file.
+
+    Returns:
+        The deserialised object, or None if the file does not exist.
+    """
     try:
         path = Path(path)
         with path.open('rb') as f:
@@ -98,21 +131,14 @@ def unpickle(path: str | Path) -> object:
         return None
 
 def time_comparison(time0: tuple[int, ...], time1: tuple[int, ...]) -> bool:
-    """
-    Compares in-game time
+    """Compares two in-game timestamps to determine if time1 has been reached.
 
-    Parameters
-    ----------
-    time0 : tuple
-        time data of the form (hour,day,month,year).
-    time1 : tuple
-        time data of the form (hour,day,month,year).
+    Args:
+        time0: Current time as (hour, day, month, year).
+        time1: Target time as (hour, day, month, year).
 
-    Returns
-    -------
-    bool
-        True if time1<=time0.
-
+    Returns:
+        True if time0 >= time1, False otherwise.
     """
     if len(time0)!=len(time1):
         error("time_comparison length error")
@@ -128,8 +154,15 @@ def time_comparison(time0: tuple[int, ...], time1: tuple[int, ...]) -> bool:
     return True
 
 def time_increment(start_time: tuple[int, ...], increment: tuple[int, ...]) -> list[int]:
+    """Adds a time increment to a start time, carrying over unit boundaries.
 
+    Args:
+        start_time: Base time as (hour, day, month, year).
+        increment: Amount to add in each unit as (hour, day, month, year).
 
+    Returns:
+        The resulting time as a list of integers.
+    """
     new_time=[i+j for i,j in zip(start_time, increment)]
     limits=[24, 30, 12, 1e99]
     new_time[0]+=1

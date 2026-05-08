@@ -15,7 +15,14 @@ QT_ENTER_KEY2 =  'special 16777221'
 
 icon_path="dnd_logo.ico"
 
-def _window_centre(window,par_centre):
+def _window_centre(window, par_centre):
+    """Positions a window relative to a parent centre and makes it visible.
+
+    Args:
+        window: The PySimpleGUI window to reposition.
+        par_centre: Centre coordinates of the parent window as (x, y),
+            or (None, None) to skip repositioning.
+    """
     if par_centre!=(None,None):
         size=window.size
         x,y=aux.TL_from_centre(par_centre, size)
@@ -28,6 +35,19 @@ def _window_centre(window,par_centre):
     window.reappear()
 
 def alert_box(text="TEXT HERE", window_name="ALERT", button_text="OK", sound=True, theme=None, par_centre=(None,None)):
+    """Displays a modal alert dialog with a single dismissal button.
+
+    Args:
+        text: Message to display. Newlines are rendered as separate rows.
+        window_name: Title of the dialog window.
+        button_text: Label for the dismissal button.
+        sound: Whether to emit a terminal bell on open. Defaults to True.
+        theme: PySimpleGUI theme string to apply.
+        par_centre: Parent window centre (x, y) for positioning, or (None, None).
+
+    Returns:
+        True if dismissed via button or Enter, False if the window was closed.
+    """
     lines=text.split("\n")
 
     sg.theme(theme)
@@ -54,6 +74,17 @@ def alert_box(text="TEXT HERE", window_name="ALERT", button_text="OK", sound=Tru
                 window.force_focus()
 
 def choice_box(text, window_name="", theme=None, par_centre=(None,None)):
+    """Displays a modal Yes/No dialog and returns the user's choice.
+
+    Args:
+        text: Question or message to display.
+        window_name: Title of the dialog window.
+        theme: PySimpleGUI theme string to apply.
+        par_centre: Parent window centre (x, y) for positioning, or (None, None).
+
+    Returns:
+        True if the user clicked Yes or pressed Enter, False otherwise.
+    """
     sg.theme(theme)
     layout=[
             [sg.Text(text)],
@@ -80,6 +111,18 @@ def choice_box(text, window_name="", theme=None, par_centre=(None,None)):
 
 
 def create_campaign(user_area, first=False, theme=None, par_centre=(None,None)):
+    """Opens a dialog for creating a new campaign and creates its directory and database file.
+
+    Args:
+        user_area: Path to the user data directory.
+        first: If True, exits the application when the dialog is closed without creating
+            a campaign. Defaults to False.
+        theme: PySimpleGUI theme string to apply.
+        par_centre: Parent window centre (x, y) for positioning, or (None, None).
+
+    Returns:
+        The new campaign name string, or None if cancelled.
+    """
     sg.theme(theme)
     layout=[
             [sg.Text("New Campaign")],
@@ -142,8 +185,17 @@ def create_campaign(user_area, first=False, theme=None, par_centre=(None,None)):
             window.force_focus()
 
 def pref_window(pref, db, theme=None, par_centre=(None,None)):
+    """Opens the preferences dialog and returns updated preferences and database state.
 
+    Args:
+        pref: Current preferences dictionary.
+        db: Current campaign Database object.
+        theme: PySimpleGUI theme string to apply.
+        par_centre: Parent window centre (x, y) for positioning, or (None, None).
 
+    Returns:
+        A tuple of (updated_pref, save, db) where save is True if the user clicked Save.
+    """
     sg.theme(theme)
     themes=custom_themes.themes
     theme_len=0
@@ -219,6 +271,16 @@ def pref_window(pref, db, theme=None, par_centre=(None,None)):
 
 
 def rename_window(old_name, theme=None, par_centre=(None,None)):
+    """Opens a dialog to rename a campaign.
+
+    Args:
+        old_name: The current campaign name, displayed in the dialog header.
+        theme: PySimpleGUI theme string to apply.
+        par_centre: Parent window centre (x, y) for positioning, or (None, None).
+
+    Returns:
+        The new campaign name string, or None if cancelled.
+    """
     sg.theme(theme)
     layout=[
             [sg.Text("Rename Campaign - "+old_name)],
@@ -265,6 +327,18 @@ def rename_window(old_name, theme=None, par_centre=(None,None)):
 
 
 def set_reminder(time_data, pref, theme=None, par_centre=(None,None)):
+    """Opens a dialog for the user to set a future reminder.
+
+    Args:
+        time_data: Current time display values as (hour_str, day_str, month_str, year_str).
+        pref: Current preferences dictionary (updated with reminder option selection).
+        theme: PySimpleGUI theme string to apply.
+        par_centre: Parent window centre (x, y) for positioning, or (None, None).
+
+    Returns:
+        A tuple of (reminder_data, updated_pref) where reminder_data is
+        (text, (hour, day, month, year)) or False if cancelled.
+    """
     sg.theme(theme)
 
     hour, day, month, year=time_data
@@ -361,6 +435,18 @@ def set_reminder(time_data, pref, theme=None, par_centre=(None,None)):
             window.force_focus()
 
 def view_reminders(db, time_data, theme=None, par_centre=(None,None)):
+    """Opens a dialog listing all reminders, allowing the user to delete them.
+
+    Args:
+        db: The current campaign Database containing the reminders list.
+        time_data: Current time display values, used to pass to set_reminder if needed.
+        theme: PySimpleGUI theme string to apply.
+        par_centre: Parent window centre (x, y) for positioning, or (None, None).
+
+    Returns:
+        The string "set_reminder" if the user wants to create a new reminder,
+        or None otherwise.
+    """
     sg.theme(theme)
 
     if db.reminders==[]:

@@ -30,19 +30,14 @@ else:
 # Functions--------------------------------------------------------------------
 
 def _version_compare(ver: str, current_ver: str = VERSION) -> bool:
-    """
-    Checks with a given version against that of the program
+    """Checks whether a given version string is at least as recent as the current version.
 
-    Parameters
-    ----------
-    ver : str
-        The version to be compared (form: "vX.Y.Z").
+    Args:
+        ver: Version string to compare, in the form "vX.Y.Z".
+        current_ver: Version to compare against. Defaults to VERSION.
 
-    Returns
-    -------
-    up_to_date : bool
-        Whether the input version is up to date with the current version.
-
+    Returns:
+        True if ver is up to date with current_ver, False if it is older.
     """
     int_ver=[int(ver[1:].split(".")[i]) for i in range(len(ver[1:].split(".")))]
     new_int_ver=[int(current_ver[1:].split(".")[i]) for i in range(len(current_ver[1:].split(".")))]
@@ -57,20 +52,13 @@ def _version_compare(ver: str, current_ver: str = VERSION) -> bool:
 
 
 def _update_db(db: Database) -> Database:
-    """
-    Updates a database created in an old version by porting its attributes
-    into a new replacement database if required
+    """Migrates a Database from an older version by copying its attributes into a fresh instance.
 
-    Parameters
-    ----------
-    db : <class 'database_class.db'>
-        The old database to be updated.
+    Args:
+        db: The existing database object, possibly created by an older version.
 
-    Returns
-    -------
-    new_db : <class 'database_class.db'>
-        The new up-to-date database.
-
+    Returns:
+        An up-to-date Database instance with all attributes transferred.
     """
 
     try:
@@ -107,14 +95,10 @@ def _update_db(db: Database) -> Database:
         return db
 
 def _update_menu() -> dict:
-    """
-    Updates the elements of the menu bar
+    """Rebuilds the menu bar definition and updates the live window menu if open.
 
-    Returns
-    -------
-    menu_dict : dictionary
-        The updated menu.
-
+    Returns:
+        The updated menu definition dictionary.
     """
 
     global recent_camps, menu_dict, window
@@ -133,7 +117,14 @@ def _update_menu() -> dict:
     return menu_dict
 
 def _move_files(target_path: str | Path) -> bool:
+    """Copies campaign and preference files from the install directory to the user area.
 
+    Args:
+        target_path: Destination directory path.
+
+    Returns:
+        True if all source files were successfully deleted after copying, False otherwise.
+    """
     deleted=True
     target_path = Path(target_path)
     try:
@@ -169,12 +160,18 @@ def _move_files(target_path: str | Path) -> bool:
     return deleted
 
 def _end_session() -> None:
+    """Writes an end-of-session marker to the campaign log and increments the session counter."""
     with open(camp_dir / f"{campaign}.txt", "a") as log:
         log.write(f"End of session {db.session_num} ------------------------------------------------------\n")
     db.session_num+=1
     pickler(camp_dir / f"{campaign}.pkl", db)
 
 def _debug_log(text: object) -> None:
+    """Appends a line of text to the debug log file.
+
+    Args:
+        text: The value to write; will be converted to string.
+    """
     with open("debug.txt", "a") as file:
         file.write(f"{str(text)}\n")
 
