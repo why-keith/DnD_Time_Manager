@@ -15,7 +15,7 @@ QT_ENTER_KEY2 =  'special 16777221'
 
 icon_path="dnd_logo.ico"
 
-def window_centre(window,par_centre):
+def _window_centre(window,par_centre):
     if par_centre!=(None,None):
         size=window.size
         x,y=aux.TL_from_centre(par_centre, size)
@@ -36,7 +36,7 @@ def alert_box(text="TEXT HERE", window_name="ALERT", button_text="OK", sound=Tru
             ]
 
     window=sg.Window(window_name, layout, finalize=True, icon=icon_path, element_justification="center", disable_minimize=True, return_keyboard_events=True, alpha_channel=0)
-    window_centre(window,par_centre)
+    _window_centre(window,par_centre)
 
     if sound:
         print("\a")
@@ -60,7 +60,7 @@ def choice_box(text, window_name="", theme=None, par_centre=(None,None)):
             [sg.Button("Yes"), sg.Button("No")]
             ]
     window=sg.Window(window_name, layout, finalize=True, icon=icon_path, element_justification="center", disable_minimize=True, return_keyboard_events=True, alpha_channel=0)
-    window_centre(window,par_centre)
+    _window_centre(window,par_centre)
     print("\a")
 
     while True:
@@ -88,7 +88,7 @@ def create_campaign(user_area, first=False, theme=None, par_centre=(None,None)):
             [sg.Button("Create")]
             ]
     window=sg.Window("New...", layout, finalize=True, icon=icon_path, element_justification="center", disable_minimize=False, return_keyboard_events=True, alpha_channel=0)
-    window_centre(window,par_centre)
+    _window_centre(window,par_centre)
 
     while True:
         event, values = window.read()
@@ -179,7 +179,7 @@ def pref_window(pref, db, theme=None, par_centre=(None,None)):
             [sg.Button("Save"), sg.Button("Cancel")],
             ]
     window=sg.Window("Preferences", layout, finalize=True, icon=icon_path, element_justification="center", disable_minimize=False, alpha_channel=0)
-    window_centre(window,par_centre)
+    _window_centre(window,par_centre)
 
     while True:
         event, values = window.read()
@@ -228,7 +228,7 @@ def rename_window(old_name, theme=None, par_centre=(None,None)):
             ]
 
     window=sg.Window("Rename", layout, finalize=True, icon=icon_path, element_justification="center", disable_minimize=False, return_keyboard_events=True, alpha_channel=0)
-    window_centre(window,par_centre)
+    _window_centre(window,par_centre)
 
     while True:
         event, values = window.read()
@@ -286,7 +286,7 @@ def set_reminder(time_data, pref, theme=None, par_centre=(None,None)):
             ]
 
     window=sg.Window("Set Reminder", layout, finalize=True, icon=icon_path, element_justification="center",  disable_minimize=False, return_keyboard_events=True, alpha_channel=0)
-    window_centre(window,par_centre)
+    _window_centre(window,par_centre)
 
     if radio_date:
         for j in ("hour_input","day_input","month_input","year_input"):
@@ -388,7 +388,7 @@ def view_reminders(db, time_data, theme=None, par_centre=(None,None)):
                 ]
 
         window=sg.Window("View Reminders", layout, finalize=True, icon=icon_path, element_justification="center", disable_minimize=False, alpha_channel=0)
-        window_centre(window,par_centre)
+        _window_centre(window,par_centre)
 
         while True:
             event, values = window.read()
@@ -435,7 +435,7 @@ def test_window(theme=None, par_centre=(None,None)):
             ]
 
     window=sg.Window("test", layout, finalize=True, icon=icon_path, element_justification="center", disable_minimize=False, alpha_channel=0)
-    window_centre(window,par_centre)
+    _window_centre(window,par_centre)
     #event, values = window.read(timeout = 0)
     window.move(0,0)
     #sleep(1)

@@ -27,7 +27,7 @@ class Database:
         self.reminders=[]
         self.session_num=1
 
-    def next_day(self, days=1):
+    def _next_day(self, days=1):
         if self.RAW:
             prob=0
         else:
@@ -56,7 +56,7 @@ class Database:
         try:
             self.day_raw+=int(x)
             if int(x)!=0:
-                self.next_day(int(x))
+                self._next_day(int(x))
 
         except TypeError as e:
             print("INVALID TIME INCREMENT")
@@ -67,11 +67,11 @@ class Database:
             while self.hour>=24:
                 self.hour-=24
                 self.day_raw+=1
-                self.next_day()
+                self._next_day()
             while self.hour<0:
                 self.hour+=24
                 self.day_raw-=1
-                self.next_day(-1)
+                self._next_day(-1)
             print(f"Time: {self.hour}:00")
         except TypeError as e:
             print("INVALID TIME INCREMENT")

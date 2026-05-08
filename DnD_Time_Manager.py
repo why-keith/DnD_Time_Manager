@@ -28,7 +28,7 @@ else:
 
 # Functions--------------------------------------------------------------------
 
-def version_compare(ver, current_ver=VERSION):
+def _version_compare(ver, current_ver=VERSION):
     """
     Checks with a given version against that of the program
 
@@ -55,7 +55,7 @@ def version_compare(ver, current_ver=VERSION):
     return up_to_date
 
 
-def update_db(db):
+def _update_db(db):
     """
     Updates a database created in an old version by porting its attributes
     into a new replacement database if required
@@ -76,7 +76,7 @@ def update_db(db):
         db_version=db.version
     except AttributeError:
         db_version="v0.0.0"
-    if not version_compare(db_version):
+    if not _version_compare(db_version):
         try:
             print(f"Updating database from {db.version} to {VERSION}")
         except:
@@ -105,7 +105,7 @@ def update_db(db):
     else:
         return db
 
-def update_menu():
+def _update_menu():
     """
     Updates the elements of the menu bar
 
@@ -131,7 +131,7 @@ def update_menu():
 
     return menu_dict
 
-def move_files(target_path):
+def _move_files(target_path):
 
     deleted=True
     target_path = Path(target_path)
@@ -167,13 +167,13 @@ def move_files(target_path):
             error(f"{target_path / 'pref.pkl'} was not moved successfully")
     return deleted
 
-def end_session():
+def _end_session():
     with open(camp_dir / f"{campaign}.txt", "a") as log:
         log.write(f"End of session {db.session_num} ------------------------------------------------------\n")
     db.session_num+=1
     pickler(camp_dir / f"{campaign}.pkl", db)
 
-def debug_log(text):
+def _debug_log(text):
     with open("debug.txt", "a") as file:
         file.write(f"{str(text)}\n")
 
@@ -190,7 +190,7 @@ if not user_area.exists(): #creates directory for save data
 if Path("pref.pkl").exists() or Path("campaigns").exists():    #moves files from program install location to user area
     if popup.alert_box(text=f"Moving campaign and preference files to user area\nFiles will be located at:\n{user_area}", window_name="Moving files", theme="Default"):
         print("moving files...")
-        if not move_files(user_area):
+        if not _move_files(user_area):
             popup.alert_box(text="Unable to delete \"pref.pkl\" and/or \"/campaigns\"\nPlease remove manually")
     else:
         exit()
@@ -237,7 +237,7 @@ camp_dir = user_area / "campaigns" / campaign
 
 
 db=unpickle(camp_dir / f"{campaign}.pkl")
-db=update_db(db)
+db=_update_db(db)
 
 # Window design----------------------------------------------------------------
 
@@ -247,7 +247,7 @@ QT_ENTER_KEY2 =  'special 16777221'
 focused_enter=None
 restart=False
 
-menu_dict=update_menu()
+menu_dict=_update_menu()
 main_layout=[
         [sg.Menu([[i,menu_dict[i]] for i in menu_dict], visible=False, key="menu_bar")],
 
@@ -375,7 +375,7 @@ while True:
         print(db.reminders)
 
     elif event == "End Session":
-        end_session()
+        _end_session()
 
 # Menu Events -----------------------------------------------------------------
 
@@ -405,7 +405,7 @@ while True:
             pref["last campaign"].insert(0, campaign)
             pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
 
-            update_menu()
+            _update_menu()
             pickler(user_area / "pref.pkl", pref)
 
         else:
@@ -433,7 +433,7 @@ while True:
                     campaign=file.split(".")[0]
                     camp_dir = user_area / "campaigns" / campaign
                     db=unpickle(Path(path) / file)
-                    db=update_db(db)
+                    db=_update_db(db)
                     update_values=[f"{db.hour}:00", db.day, db.tenday, f"{db.month[0]}. {db.month[1]}", db.year]+[db.temperature, db.precipitation]+[db.windspeed, db.wind_dir]
                     break
         except Exception as e:
@@ -450,7 +450,7 @@ while True:
             pref["last campaign"].insert(0, campaign)
             pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
 
-            update_menu()
+            _update_menu()
             pickler(user_area / "pref.pkl", pref)
 
 
@@ -484,7 +484,7 @@ while True:
                 pref["last campaign"].remove(old_campaign)
                 pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
 
-                update_menu()
+                _update_menu()
                 pickler(user_area / "pref.pkl", pref)
                 window.disable()
                 popup.alert_box(text="Rename sucessful", sound=False, window_name="Rename", theme=pref["theme"], par_centre=centre)
@@ -519,7 +519,7 @@ while True:
 
             window.set_title("D&D Time Manager - "+campaign)
             db=unpickle(camp_dir / f"{campaign}.pkl")
-            db=update_db(db)
+            db=_update_db(db)
             update_values=[f"{db.hour}:00", db.day, db.tenday, f"{db.month[0]}. {db.month[1]}", db.year]+[db.temperature, db.precipitation]+[db.windspeed, db.wind_dir]
 
             for i in range(len(updatable)):
@@ -533,7 +533,7 @@ while True:
             pref["last campaign"].insert(0, campaign)
             pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
 
-            update_menu()
+            _update_menu()
             pickler(user_area / "pref.pkl", pref)
 
 
@@ -635,12 +635,12 @@ while True:
                         camp_dir = user_area / "campaigns" / event
                         campaign=file.split(".")[0]
                         db=unpickle(camp_dir / file)
-                        db=update_db(db)
+                        db=_update_db(db)
                         update_values=[f"{db.hour}:00", db.day, db.tenday, f"{db.month[0]}. {db.month[1]}", db.year]+[db.temperature, db.precipitation]+[db.windspeed, db.wind_dir]
                         break
             except FileNotFoundError:
                 pref["last campaign"].remove(event)
-                update_menu()
+                _update_menu()
                 window.disable()
                 popup.alert_box(f"Unable to load campaign \"{event}\"", theme=pref["theme"], par_centre=centre)
                 window.enable()
@@ -659,7 +659,7 @@ while True:
                 pref["last campaign"].insert(0, campaign)
                 pref["last campaign"]=list(dict.fromkeys(pref["last campaign"]))
 
-                update_menu()
+                _update_menu()
                 pickler(user_area / "pref.pkl", pref)
 
     else:
@@ -670,7 +670,7 @@ while True:
 
 # End of loop------------------------------------------------------------------
 if pref["end_session_on_close"] and not DEV_MODE:
-    end_session()
+    _end_session()
 
 pref["window_position"]=position
 pref["theme"]=pref["new_theme"]
