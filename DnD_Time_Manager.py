@@ -342,15 +342,15 @@ while True:
 
 
         try:
-            h=int(window["hour_input"].Get())
-            d=int(window["day_input"].Get())
+            hour_change=int(window["hour_input"].Get())
+            day_change=int(window["day_input"].Get())
         except:
             print("INVALID ENTRY")
             error(f"Invalid time input \"{window['hour_input'].Get()}, {window['day_input'].Get()}\" detected")
             continue
         else:
-            db.change_hour(h)
-            db.change_day(d)
+            db.change_hour(hour_change)
+            db.change_day(day_change)
             pickler(camp_dir / f"{campaign}.pkl", db)
             update_values=[f"{db.hour}:00", db.day, db.tenday, f"{db.month[0]}. {db.month[1]}", db.year]+[db.temperature, db.precipitation]+[db.windspeed, db.wind_dir]
             for i in range(len(updatable)):

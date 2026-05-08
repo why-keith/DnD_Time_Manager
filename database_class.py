@@ -41,14 +41,14 @@ class Database:
             prob=5
 
         for _ in range(abs(days)):
-            x=[randint(0,prob) for _ in range(4)]
-            if x[0]==0:
+            change_rolls=[randint(0,prob) for _ in range(4)]
+            if change_rolls[0]==0:
                 self.precipitation=choice(conditions.precipitation)
-            if x[1]==0:
+            if change_rolls[1]==0:
                 self.wind_dir=choice(conditions.wind_dir)
-            if x[2]==0:
+            if change_rolls[2]==0:
                 self.windspeed=choice(conditions.wind_speed)
-            if x[3]==0:
+            if change_rolls[3]==0:
                 self.temperature=choice(conditions.temp)
 
         self.day=self.day_raw%30+1
@@ -57,28 +57,28 @@ class Database:
         self.month=[self.month_raw+1,conditions.months[self.month_raw]]
         self.year=int(self.day_raw/360)+1491
 
-    def change_day(self, x: int) -> None:
+    def change_day(self, days: int) -> None:
         """Increments the raw day counter and updates the calendar.
 
         Args:
-            x: Number of days to add (can be negative).
+            days: Number of days to add (can be negative).
         """
         try:
-            self.day_raw+=int(x)
-            if int(x)!=0:
-                self._next_day(int(x))
+            self.day_raw+=int(days)
+            if int(days)!=0:
+                self._next_day(int(days))
 
         except TypeError as e:
             print("INVALID TIME INCREMENT")
 
-    def change_hour(self, x: int) -> None:
+    def change_hour(self, hours: int) -> None:
         """Increments the hour counter, rolling over into new days as needed.
 
         Args:
-            x: Number of hours to add (can be negative).
+            hours: Number of hours to add (can be negative).
         """
         try:
-            self.hour+=int(x)
+            self.hour+=int(hours)
             while self.hour>=24:
                 self.hour-=24
                 self.day_raw+=1
