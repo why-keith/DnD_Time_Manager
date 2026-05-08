@@ -150,7 +150,6 @@ def create_campaign(user_area, first=False, theme=None, par_centre=(None,None)):
         elif event == sg.WIN_CLOSED and first:
             window.close()
             exit()
-            return
 
         elif event=="Create" or focused_enter=="campaign_name":
             name=window["campaign_name"].Get()
